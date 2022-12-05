@@ -26,7 +26,7 @@ kwargs = {
     "randomized_change_params": {
         "change_prob_dict": full_change_list,
         "possible_elements": ["B", "C", "O"],
-        "added_bond_orders": [1],
+        "added_bond_orders": [1, 2],
         "chain_addition_tuple_possibilities": False,
         "bond_order_changes": [-1, 1],
         "bond_order_valence_changes": [-2, 2],

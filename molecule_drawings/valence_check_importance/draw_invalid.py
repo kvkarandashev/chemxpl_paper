@@ -1,5 +1,8 @@
 from bmapqml.chemxpl.valence_treatment import str2ChemGraph
+from bmapqml.chemxpl.modify import change_bond_order
+from bmapqml.utils import mkdir
 from bmapqml.chemxpl.rdkit_draw_utils import (
+    draw_all_modification_possibilities,
     draw_chemgraph_to_file,
     LIGHTRED,
     LIGHTBLUE,
@@ -36,4 +39,22 @@ draw_chemgraph_to_file(
     highlightBondTuples=highlightBondTuples["post_move"],
     highlightBondTupleColor=LIGHTRED,
     highlightAtomRadius=0.4,
+)
+
+mod_pos_subdir = "modification_possibilities"
+
+mkdir(mod_pos_subdir)
+
+randomized_change_parameters = {
+    "change_prob_dict": [change_bond_order],
+    "bond_order_changes": [-1, 1],
+}
+
+draw_all_modification_possibilities(
+    other_cg,
+    "pos_",
+    dump_directory=mod_pos_subdir,
+    randomized_change_params=randomized_change_parameters,
+    color_change=LIGHTRED,
+    color_change_neighbors=LIGHTBLUE,
 )

@@ -5,12 +5,29 @@ import numpy as np
 
 def val_in_xyz(xyz_file, quant_name):
     i = open(xyz_file, "r")
-    l = i.readlines()[1].split()
-    for q in l:
-        q_spl = q.split("=")
-        if q_spl[0] == quant_name:
-            return float(q_spl[1])
-    raise Exception
+    lines = i.readlines()
+    if len(lines) == 1:
+        s = lines[0].split()[2]
+        weird = True
+    else:
+        weird = False
+        l = lines[1].split()
+        for q in l:
+            q_spl = q.split("=")
+            if q_spl[0] == quant_name:
+                s = q_spl[1]
+                break
+    return float(s), weird
+
+
+def extract_hist_size(data_dir):
+    out = glob.glob(data_dir + "/*.stdout_*")[0]
+    f = open(out, "r")
+    l = f.readlines()
+    for s in l[::-1]:
+        spl = s.split()
+        if spl[0] == "HIST":
+            return int(spl[4])
 
 
 parent_folder = sys.argv[1]
@@ -33,12 +50,14 @@ for quantity in quantities:
     for gap_constraint in gap_constraints:
         quant_coeff = None
         for bias in biases:
+            weird_counter = 0
             bulk_name = "_" + bias + "_" + gap_constraint + "_" + quantity
             folder = parent_folder + bulk_name
             data_dirs = glob.glob(folder + "/data_*")
             min_data_dir = None
             min_val = None
             vals = []
+            eval_nums = []
             for data_dir in data_dirs:
                 if quant_coeff is None:
                     quant_pkl = glob.glob(data_dir + "/*_water_*.pkl")
@@ -55,8 +74,24 @@ for quantity in quantities:
                         abs(quant_coeff),
                         file=output,
                     )
-                cur_val = val_in_xyz(data_dir + "/best_candidate_0.xyz", quantity)
+                cur_val, weird = val_in_xyz(
+                    data_dir + "/best_candidate_0.xyz", quantity
+                )
+                if weird:
+                    weird_counter += 1
+                    subprocess.run(
+                        [
+                            "cp",
+                            data_dir + "/best_candidate_0.png",
+                            summary_dir
+                            + "/weird_"
+                            + str(weird_counter)
+                            + bulk_name
+                            + ".png",
+                        ]
+                    )
                 vals.append(cur_val * quant_coeff)
+                eval_nums.append(extract_hist_size(data_dir))
                 if (min_val is None) or (min_val > cur_val):
                     min_val = cur_val
                     min_data_dir = data_dir
@@ -80,5 +115,11 @@ for quantity in quantities:
                 file=output,
             )
             print("MEAN AND STD:", np.mean(vals), np.std(vals), file=output)
+            print(
+                "Number of evaluations:",
+                np.mean(eval_nums),
+                np.std(eval_nums),
+                file=output,
+            )
 
 output.close()
