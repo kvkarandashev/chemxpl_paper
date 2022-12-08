@@ -52,8 +52,3 @@ def folder_name_param_dict(folder_name):
         "best_ref_val": best_ref_vals[dataset][gap_constraint][quant],
         "gap_constr_val": gap_constraint_values[gap_constraint],
     }
-
-
-if __name__ == "__main__":
-    folder_name = sys.argv[1]
-    print(folder_name_param_dict(folder_name))
