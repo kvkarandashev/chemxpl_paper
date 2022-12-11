@@ -1,33 +1,7 @@
 import os, sys, glob, subprocess
 from bmapqml.utils import mkdir, loadpkl
 import numpy as np
-
-
-def val_in_xyz(xyz_file, quant_name):
-    i = open(xyz_file, "r")
-    lines = i.readlines()
-    if len(lines) == 1:
-        s = lines[0].split()[2]
-        weird = True
-    else:
-        weird = False
-        l = lines[1].split()
-        for q in l:
-            q_spl = q.split("=")
-            if q_spl[0] == quant_name:
-                s = q_spl[1]
-                break
-    return float(s), weird
-
-
-def extract_hist_size(data_dir):
-    out = glob.glob(data_dir + "/*.stdout_*")[0]
-    f = open(out, "r")
-    l = f.readlines()
-    for s in l[::-1]:
-        spl = s.split()
-        if spl[0] == "HIST":
-            return int(spl[4])
+from misc_procedures import val_in_xyz, extract_hist_size
 
 
 parent_folder = sys.argv[1]
