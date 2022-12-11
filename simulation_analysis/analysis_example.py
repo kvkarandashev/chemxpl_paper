@@ -5,8 +5,9 @@ import os
 
 all_simulations = [x[0] for x in os.walk("/data/jan/konstantin",topdown=False)]
 
+#order the paths by folder hierarchy
+all_simulations = sorted(all_simulations, key=lambda x: len(x.split("/")), reverse=True)
 
-#pdb.set_trace()
 for result_path in all_simulations:
     print(result_path)
     #result_path = "/data/jan/konstantin/xTB_dipsolv_opt_1_weak_strong_dipole/data_xTB_dipsolv_opt_1_weak_strong_dipole_5"
@@ -19,6 +20,3 @@ for result_path in all_simulations:
     ALL_HISTOGRAMS, GLOBAL_HISTOGRAM, ALL_TRAJECTORIES = ana.parse_results()
     PARETO_CORRECTED = ana.pareto_correct(GLOBAL_HISTOGRAM)
     ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val)
-
-
-#set 
