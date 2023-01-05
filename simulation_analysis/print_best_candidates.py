@@ -13,6 +13,8 @@ pkl_file = sys.argv[1]
 
 num_init_best_candidates = 1000
 
+nprocs = 40
+
 print("Considered restart file:", pkl_file)
 
 try:
@@ -82,7 +84,7 @@ def tp_wconv_vals(cand):
     return cand
 
 
-resorted_best_candidates = Parallel(n_jobs=40, backend="multiprocessing")(
+resorted_best_candidates = Parallel(n_jobs=nprocs, backend="multiprocessing")(
     delayed(tp_wconv_vals)(bc) for bc in best_candidates
 )
 
@@ -103,12 +105,24 @@ mkdir(new_dir)
 
 file_prefix = new_dir + "/best_candidate_"
 
-for cand_id, cand in enumerate(resorted_best_candidates):
+
+def display_coord_info(cand):
+    tp = cand.tp
+    return morfeus_coord_info_from_tp(tp, num_attempts=128)
+
+
+all_coord_info = Parallel(n_jobs=nprocs, backend="multiprocessing")(
+    delayed(display_coord_info)(bc) for bc in best_candidates
+)
+
+for cand_id, (cand, coord_info) in enumerate(
+    zip(resorted_best_candidates, all_coord_info)
+):
     file_basename = file_prefix + str(cand_id)
     xyz_name = file_basename + ".xyz"
     image_name = file_basename + ".png"
 
-    extra_string = ""
+    extra_string = "SMILES=" + coord_info["canon_rdkit_SMILES"] + " "
     tp = cand.tp
     draw_chemgraph_to_file(
         tp.egc.chemgraph, image_name, size=(600, 400), bw_palette=False
@@ -117,7 +131,6 @@ for cand_id, cand in enumerate(resorted_best_candidates):
         if isinstance(val, float) or isinstance(val, int):
             extra_string += val_name + "=" + str(val) + " "
 
-    coord_info = morfeus_coord_info_from_tp(tp, num_attempts=128)
     coords = coord_info["coordinates"]
     if coords is None:
         xyz_output = open(xyz_name, "w")
