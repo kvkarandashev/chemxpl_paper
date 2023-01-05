@@ -18,9 +18,10 @@ chemgraph_strings = [
 ]
 
 kwargs = {
-    "size": (300, 200),
+    "size": (200, 300),
     "highlightAtomRadius": 0.4,
     "bw_palette": True,
+    "rotate": 90,
     "abbrevs": True,
 }
 

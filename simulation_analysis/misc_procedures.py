@@ -83,12 +83,12 @@ def folder_name_param_dict(folder_name):
 
 
 def data_dir_best_candidate_val(dirname, quant):
-    return val_in_xyz(dirname + "/best_candidate_0.xyz", quant)
+    return val_in_xyz(dirname + "/best_candidates/best_candidate_0.xyz", quant)
 
 
 def find_seed_with_best_candidate(dirname):
     seed_dirs = glob.glob(dirname + "/data_*")
-    quant = folder_name_param_dict(seed_dirs[0])["quant"]
+    quant = folder_name_param_dict(seed_dirs[0])["final_minfunc_val"]
     min_val = None
     for seed_dir in seed_dirs:
         cur_val = data_dir_best_candidate_val(seed_dir, quant)
