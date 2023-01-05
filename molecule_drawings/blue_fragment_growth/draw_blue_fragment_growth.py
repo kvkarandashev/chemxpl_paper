@@ -1,12 +1,12 @@
 from bmapqml.chemxpl.valence_treatment import str2ChemGraph
 from bmapqml.chemxpl.rdkit_draw_utils import (
-    draw_all_possible_resonance_structures,
+    draw_all_possible_fragment_pairs,
     LIGHTBLUE,
     LIGHTRED,
     LIGHTGREEN,
 )
-from bmapqml.chemxpl.rdkit_utils import chemgraph_to_canonical_rdkit
-from bmapqml.chemxpl.modify import FragmentPair
+from bmapqml.utils import mkdir
+import os
 import numpy as np
 import random
 
@@ -25,20 +25,10 @@ kwargs = {
     "abbrevs": None,
 }
 
-added_member_atoms_list = [[[0], [1], [2]], [[4], [5, 2]]]
-
-for i_cg, chemgraph_string in enumerate(chemgraph_strings):
-    cg = str2ChemGraph(chemgraph_string)
-
-    membership_vector = np.zeros((cg.nhatoms(),), dtype=int)
-
-    for i, added_member_atoms in enumerate(added_member_atoms_list[i_cg]):
-
-        for ama in added_member_atoms:
-            membership_vector[ama] = 1
-
-        file_prefix_cg = "resonance_" + str(i_cg) + "_" + str(i) + "_"
-
-        fp = FragmentPair(cg, membership_vector)
-
-        draw_all_possible_resonance_structures(fp, file_prefix_cg, **kwargs)
+for i, chemgraph_str in enumerate(chemgraph_strings):
+    cg=str2ChemGraph(chemgraph_str)
+    output_dir="frags_"+str(i)
+    mkdir(output_dir)
+    os.chdir(output_dir)
+    draw_all_possible_fragment_pairs(cg)
+    os.chdir("..")
