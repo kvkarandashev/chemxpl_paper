@@ -13,7 +13,7 @@ pkl_file = sys.argv[1]
 
 num_init_best_candidates = 1000
 
-nprocs = 40
+nprocs = 4
 
 print("Considered restart file:", pkl_file)
 
@@ -112,7 +112,7 @@ def display_coord_info(cand):
 
 
 all_coord_info = Parallel(n_jobs=nprocs, backend="multiprocessing")(
-    delayed(display_coord_info)(bc) for bc in best_candidates
+    delayed(display_coord_info)(bc) for bc in resorted_best_candidates
 )
 
 for cand_id, (cand, coord_info) in enumerate(

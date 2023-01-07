@@ -1,7 +1,7 @@
 import glob, os
 
 
-def val_in_xyz(xyz_file, quant_name):
+def val_in_xyz(xyz_file, quant_name, quant_type=float):
     i = open(xyz_file, "r")
     lines = i.readlines()
     if len(lines) == 1:
@@ -13,15 +13,32 @@ def val_in_xyz(xyz_file, quant_name):
         for q in l:
             q_spl = q.split("=")
             if q_spl[0] == quant_name:
-                s = q_spl[1]
+                s = q.split(quant_name + "=")[1]
                 break
-    return float(s), weird
+    return quant_type(s), weird
+
+
+def all_xyz_vals(xyz_file):
+    i = open(xyz_file, "r")
+    lines = i.readlines()
+    l = lines[1].split()
+    output = {}
+    for q in l:
+        q_spl = q.split("=")
+        quant_name = q_spl[0]
+        output[quant_name] = q.split(quant_name + "=")[1]
+    return output
 
 
 def extract_hist_size(data_dir):
-    out = glob.glob(data_dir + "/*.stdout_*")[0]
+    stdouts = glob.glob(data_dir + "/*.stdout_*")
+    if len(stdouts) == 0:
+        out = data_dir + "/joblog.txt"
+    else:
+        out = stdouts[0]
     f = open(out, "r")
     l = f.readlines()
+    f.close()
     for s in l[::-1]:
         spl = s.split()
         if spl[0] == "HIST":
