@@ -93,6 +93,7 @@ def data_dir_best_candidate_val(dirname, quant):
 def find_seed_with_best_candidate(dirname):
     seed_dirs = glob.glob(dirname + "/data_*")
     min_val = None
+    min_seed_dir = None
     for seed_dir in seed_dirs:
         cur_val = data_dir_best_candidate_val(seed_dir, "final_minfunc_val")
         if (min_val is None) or (min_val > cur_val):
