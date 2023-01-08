@@ -1,23 +1,6 @@
 import glob, os
 
 
-def val_in_xyz(xyz_file, quant_name, quant_type=float):
-    i = open(xyz_file, "r")
-    lines = i.readlines()
-    if len(lines) == 1:
-        s = lines[0].split()[2]
-        weird = True
-    else:
-        weird = False
-        l = lines[1].split()
-        for q in l:
-            q_spl = q.split("=")
-            if q_spl[0] == quant_name:
-                s = q.split(quant_name + "=")[1]
-                break
-    return quant_type(s), weird
-
-
 def all_xyz_vals(xyz_file):
     i = open(xyz_file, "r")
     lines = i.readlines()
@@ -28,6 +11,10 @@ def all_xyz_vals(xyz_file):
         quant_name = q_spl[0]
         output[quant_name] = q.split(quant_name + "=")[1]
     return output
+
+
+def val_in_xyz(xyz_file, quant_name, quant_type=float):
+    return quant_type(all_xyz_vals(xyz_file)[quant_name])
 
 
 def extract_hist_size(data_dir):
@@ -105,11 +92,10 @@ def data_dir_best_candidate_val(dirname, quant):
 
 def find_seed_with_best_candidate(dirname):
     seed_dirs = glob.glob(dirname + "/data_*")
-    quant = folder_name_param_dict(seed_dirs[0])["final_minfunc_val"]
     min_val = None
     for seed_dir in seed_dirs:
-        cur_val = data_dir_best_candidate_val(seed_dir, quant)
-        if (min_val is None) or (min_val < cur_val):
+        cur_val = data_dir_best_candidate_val(seed_dir, "final_minfunc_val")
+        if (min_val is None) or (min_val > cur_val):
             min_val = cur_val
             min_seed_dir = seed_dir
     return min_seed_dir
