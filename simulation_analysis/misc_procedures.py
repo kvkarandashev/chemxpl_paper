@@ -213,7 +213,7 @@ def folder_name_param_dict(folder_name):
         "gap_constraint": gap_constraint,
         "quant": quant,
         "bias_strength": bias_strength,
-        "best_ref_val": best_ref_vals[dataset][gap_constraint][quant],
+        "best_ref_val": best_ref_vals[dataset][gap_constraint][quant][0],
         "gap_constr_val": gap_constraint_values[gap_constraint],
     }
 
