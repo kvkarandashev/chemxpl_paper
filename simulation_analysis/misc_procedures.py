@@ -4,6 +4,8 @@ import glob, os
 def all_xyz_vals(xyz_file):
     i = open(xyz_file, "r")
     lines = i.readlines()
+    if len(lines) == 1:
+        return None
     l = lines[1].split()
     output = {}
     for q in l:
