@@ -3,6 +3,7 @@ from bmapqml.utils import mkdir
 from bmapqml.chemxpl.utils import SMILES_to_egc
 import numpy as np
 from misc_procedures import all_xyz_vals, extract_hist_size
+from tabulate import tabulate
 
 
 def average_overconv_cheap_deviation_norm(data_dir):
@@ -65,10 +66,22 @@ for quantity in quantities:
             file=output,
         )
         #        print_ref_data_params(quantity=quantity, gap_constraint=gap_constraint, , file=output)
-        print(
-            "# BIAS STRENGTH # TOTAL BEST VALUE # AGREEMENT # TOTAL BEST SMILES # MAX BEST RMSE # AV BEST VALUE # STDDEV ... # AV REQ CONSIDERED TPS # STDDEV ... # AV TOT CONSIDERED TPS # STDDEV ... # NORM FINAL MIN NOISE # NORM CHEAP ...",
-            file=output,
-        )
+        headers = [
+            "BIAS STRENGTH",
+            "TOTAL BEST VALUE",
+            "AGREEMENT",
+            "TOTAL BEST SMILES",
+            "MAX BEST RMSE",
+            "AV BEST VALUE",
+            "STDDEV ...",
+            "AV REQ CONSIDERED TPS",
+            "STDDEV ...",
+            "AV TOT CONSIDERED TPS",
+            "STDDEV ...",
+            "NORM FINAL MIN NOISE",
+            "NORM CHEAP ...",
+        ]
+        table_values = []
         for bias in biases:
             bulk_name = "_" + bias + "_" + gap_constraint + "_" + quantity
             folder = parent_folder + bulk_name
@@ -127,21 +140,23 @@ for quantity in quantities:
                 )
             egcs = [SMILES_to_egc(s) for s in all_SMILES]
             min_egc = SMILES_to_egc(min_SMILES)
-            print(
-                bias,
-                min_val,
-                sum(egc == min_egc for egc in egcs),
-                min_SMILES,
-                max_RMSE,
-                np.mean(vals),
-                np.std(vals),
-                np.mean(needed_considered_tps),
-                np.std(needed_considered_tps),
-                np.mean(tot_considered_tps),
-                np.std(tot_considered_tps),
-                np.mean(final_norm_noise_quants),
-                np.mean(cheap_norm_noise_quants),
-                file=output,
+            table_values.append(
+                [
+                    bias,
+                    min_val,
+                    sum(egc == min_egc for egc in egcs),
+                    min_SMILES,
+                    max_RMSE,
+                    np.mean(vals),
+                    np.std(vals),
+                    np.mean(needed_considered_tps),
+                    np.std(needed_considered_tps),
+                    np.mean(tot_considered_tps),
+                    np.std(tot_considered_tps),
+                    np.mean(final_norm_noise_quants),
+                    np.mean(cheap_norm_noise_quants),
+                ]
             )
+        print(tabulate(table_values, headers=["# " + s for s in headers]), file=output)
 
 output.close()
