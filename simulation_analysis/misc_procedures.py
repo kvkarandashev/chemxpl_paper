@@ -196,7 +196,10 @@ def folder_name_param_dict(folder_name):
     seed = int(bname_split[last_id])
     last_id -= 1
     if bname_split[last_id] == "energy":
-        quant = "solvation_energy"
+        if bname_split[last_id - 1] == "solvation":
+            quant = "solvation_energy"
+        else:
+            quant = "atomization_energy"
         last_id -= 2
     else:
         quant = "dipole"
