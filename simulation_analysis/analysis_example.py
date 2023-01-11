@@ -2,6 +2,7 @@ from bmapqml.chemxpl.plotting import Analyze
 from folder_translator import folder_name_param_dict
 import os
 import pdb
+import pandas as pd
 
 if __name__ == '__main__':
 
@@ -27,6 +28,11 @@ if __name__ == '__main__':
                 if line != "None":
                     all_simulations.append(line)
 
+    #open file in append mode and create if not exits
+
+    n_steps_log =  open("/data/jan/konstantin_plots/log/steps.txt", "w")
+
+
 
     for result_path in all_simulations:
         print(result_path)
@@ -42,13 +48,23 @@ if __name__ == '__main__':
             best_ref_val, gap_constr_val = sim_info["best_ref_val"], sim_info["gap_constr_val"]
             print(best_ref_val, gap_constr_val)
             ana = Analyze(
-                "{}/restart_file*".format(result_path), quantity=sim_info["quant"], verbose=True,full_traj=False
+                "{}/restart_file*".format(result_path), quantity=sim_info["quant"], verbose=True,full_traj=True
             )
-            ALL_HISTOGRAMS, GLOBAL_HISTOGRAM, ALL_TRAJECTORIES = ana.parse_results()
-            pdb.set_trace()
-            PARETO_CORRECTED = ana.pareto_correct(GLOBAL_HISTOGRAM)
             
+            
+
+            ALL_HISTOGRAMS, GLOBAL_HISTOGRAM, ALL_TRAJECTORIES = ana.parse_results()
+            
+            #pdb.set_trace()
+            global_MC_step_counter = ana.global_MC_step_counter
+            print(global_MC_step_counter)
+            n_steps_log.write("{}\t{}\n".format(sim_name.split("/")[-1],global_MC_step_counter))
+            #
+            PARETO_CORRECTED = ana.pareto_correct(GLOBAL_HISTOGRAM)
+            PARETO_CORRECTED.to_csv("/data/jan/konstantin_plots/log/{}.csv".format(sim_name.split("/")[-1]))
+            ALL_TRAJECTORIES.to_csv("/data/jan/konstantin_plots/log/traj_{}.csv".format(sim_name.split("/")[-1]))
+
             ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="encounter")
             ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="density")
             
-            
+    n_steps_log.close()
