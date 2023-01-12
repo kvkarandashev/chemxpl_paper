@@ -1,7 +1,10 @@
-from bmapqml.chemxpl.plotting import Analyze
+from bmapqml.chemxpl.plotting import Analyze,Chem_Div
 from folder_translator import folder_name_param_dict
 import os
 import pdb
+import numpy as np
+import matplotlib.pyplot as plt
+
 import pandas as pd
 
 if __name__ == '__main__':
@@ -64,6 +67,16 @@ if __name__ == '__main__':
             PARETO_CORRECTED.to_csv("/data/jan/konstantin_plots/log/{}.csv".format(sim_name.split("/")[-1]))
             ALL_TRAJECTORIES.to_csv("/data/jan/konstantin_plots/log/traj_{}.csv".format(sim_name.split("/")[-1]))
 
+            time_ordered_smiles = ana.time_ordered_smiles
+            #dump time ordered smiles to np file
+            np.save("/data/jan/konstantin_plots/log/smiles_{}.npy".format(sim_name.split("/")[-1]), time_ordered_smiles)
+            
+            ana_chem = Chem_Div(traj = time_ordered_smiles, subsample = 1000, verbose = True)
+            ana_chem.compute_representations()
+            ana_chem.compute_diversity()
+            plt.plot(ana_chem.N, ana_chem.diversity)
+            plt.show()
+            pdb.set_trace()
             ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="encounter")
             ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="density")
             
