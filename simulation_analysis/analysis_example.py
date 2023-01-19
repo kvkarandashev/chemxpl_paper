@@ -1,7 +1,11 @@
-from bmapqml.chemxpl.plotting import Analyze
+from bmapqml.chemxpl.plotting import Analyze,Chem_Div
 from folder_translator import folder_name_param_dict
 import os
 import pdb
+import numpy as np
+import matplotlib.pyplot as plt
+
+import pandas as pd
 
 if __name__ == '__main__':
 
@@ -27,6 +31,11 @@ if __name__ == '__main__':
                 if line != "None":
                     all_simulations.append(line)
 
+    #open file in append mode and create if not exits
+
+    n_steps_log =  open("/data/jan/konstantin_plots/log/steps.txt", "w")
+
+
 
     for result_path in all_simulations:
         print(result_path)
@@ -42,13 +51,33 @@ if __name__ == '__main__':
             best_ref_val, gap_constr_val = sim_info["best_ref_val"], sim_info["gap_constr_val"]
             print(best_ref_val, gap_constr_val)
             ana = Analyze(
-                "{}/restart_file*".format(result_path), quantity=sim_info["quant"], verbose=True,full_traj=False
+                "{}/restart_file*".format(result_path), quantity=sim_info["quant"], verbose=True,full_traj=True
             )
-            ALL_HISTOGRAMS, GLOBAL_HISTOGRAM, ALL_TRAJECTORIES = ana.parse_results()
-            pdb.set_trace()
-            PARETO_CORRECTED = ana.pareto_correct(GLOBAL_HISTOGRAM)
             
+            
+
+            ALL_HISTOGRAMS, GLOBAL_HISTOGRAM, ALL_TRAJECTORIES = ana.parse_results()
+            
+            #pdb.set_trace()
+            global_MC_step_counter = ana.global_MC_step_counter
+            print(global_MC_step_counter)
+            n_steps_log.write("{}\t{}\n".format(sim_name.split("/")[-1],global_MC_step_counter))
+            #
+            PARETO_CORRECTED = ana.pareto_correct(GLOBAL_HISTOGRAM)
+            PARETO_CORRECTED.to_csv("/data/jan/konstantin_plots/log/{}.csv".format(sim_name.split("/")[-1]))
+            ALL_TRAJECTORIES.to_csv("/data/jan/konstantin_plots/log/traj_{}.csv".format(sim_name.split("/")[-1]))
+
+            time_ordered_smiles = ana.time_ordered_smiles
+            #dump time ordered smiles to np file
+            np.save("/data/jan/konstantin_plots/log/smiles_{}.npy".format(sim_name.split("/")[-1]), time_ordered_smiles)
+            
+            ana_chem = Chem_Div(traj = time_ordered_smiles, subsample = 1000, verbose = True)
+            ana_chem.compute_representations()
+            ana_chem.compute_diversity()
+            plt.plot(ana_chem.N, ana_chem.diversity)
+            plt.show()
+            pdb.set_trace()
             ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="encounter")
             ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="density")
             
-            
+    n_steps_log.close()
