@@ -62,21 +62,23 @@ for entry in histogram:
 # a best handidate had been discovered.
 #
 # WARNING: I realized too late that first_global_MC_step_encounter and first_MC_step_encounter the values were switched in the code used to generate some restart files.
-def first_global_MC_step_encounter(tp):
-    return min(tp.first_MC_step_encounter, tp.first_global_MC_step_encounter)
+def first_step_tuple(tp):
+    return (tp.first_MC_step_encounter, tp.first_global_MC_step_encounter)
+
+
+def first_MC_step_encounter(tp):
+    return max(first_step_tuple(tp))
 
 
 for i, bc in enumerate(best_candidates):
     tp = bc.tp
-    num_MC_moves = first_global_MC_step_encounter(tp)
+    num_MC_moves = first_MC_step_encounter(tp)
     tp.calculated_data["req_num_tps"] = sum(
-        (first_global_MC_step_encounter(tp) <= num_MC_moves) for tp in histogram
+        (first_MC_step_encounter(tp) <= num_MC_moves) for tp in histogram
     )
     tp.calculated_data["minfunc_sorted_id"] = i
     tp.calculated_data["first_MC_step_encounter"] = num_MC_moves
-    tp.calculated_data[
-        "first_global_MC_step_encounter"
-    ] = first_global_MC_step_encounter(tp)
+    tp.calculated_data["first_global_MC_step_encounter"] = min(first_step_tuple(tp))
     del tp.calculated_data[xTB_res_label]
 
 # Calculate the overconverged minimized function values.
