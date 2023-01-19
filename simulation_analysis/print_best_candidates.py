@@ -60,17 +60,23 @@ for entry in histogram:
 
 # For each of those best candidates we also check how many trajectory points had been considered up to the point that
 # a best handidate had been discovered.
+#
+# WARNING: I realized too late that first_global_MC_step_encounter and first_MC_step_encounter the values were switched in the code used to generate some restart files.
+def first_global_MC_step_encounter(tp):
+    return min(tp.first_MC_step_encounter, tp.first_global_MC_step_encounter)
+
 
 for i, bc in enumerate(best_candidates):
     tp = bc.tp
-    num_MC_moves = tp.first_global_MC_step_encounter
-    # WARNING: I realized too late that first_global_MC_step_encounter and first_MC_step_encounter the values were switched in the code used to generate the restart files.
+    num_MC_moves = first_global_MC_step_encounter(tp)
     tp.calculated_data["req_num_tps"] = sum(
-        (tp.first_global_MC_step_encounter <= num_MC_moves) for tp in histogram
+        (first_global_MC_step_encounter(tp) <= num_MC_moves) for tp in histogram
     )
     tp.calculated_data["minfunc_sorted_id"] = i
     tp.calculated_data["first_MC_step_encounter"] = num_MC_moves
-    tp.calculated_data["first_global_MC_step_encounter"] = tp.first_MC_step_encounter
+    tp.calculated_data[
+        "first_global_MC_step_encounter"
+    ] = first_global_MC_step_encounter(tp)
     del tp.calculated_data[xTB_res_label]
 
 # Calculate the overconverged minimized function values.
