@@ -2,7 +2,7 @@ import os, sys, glob, subprocess
 from bmapqml.utils import mkdir
 from bmapqml.chemxpl.utils import SMILES_to_egc
 import numpy as np
-from misc_procedures import all_xyz_vals, extract_hist_size
+from misc_procedures import all_xyz_vals, extract_hist_size, table_to_csv
 from tabulate import tabulate
 
 
@@ -78,6 +78,8 @@ for quantity in quantities:
             "STDDEV ...",
             "AV TOT CONSIDERED TPS",
             "STDDEV ...",
+            "AV STEP BEST FOUND",
+            "STDDEV ...",
             "NORM FINAL MIN NOISE",
             "NORM CHEAP ...",
         ]
@@ -96,6 +98,7 @@ for quantity in quantities:
             vals = []
             needed_considered_tps = []
             tot_considered_tps = []
+            global_step_first_encounters = []
             final_norm_noise_quants = []
             cheap_norm_noise_quants = []
             for data_dir in glob.glob(folder + "/data_*"):
@@ -113,6 +116,10 @@ for quantity in quantities:
                 tot_considered_tps.append(extract_hist_size(data_dir))
 
                 needed_considered_tps.append(float(xyz_vals["req_num_tps"]))
+
+                global_step_first_encounters.append(
+                    float(xyz_vals["first_global_MC_step_encounter"])
+                )
 
                 (
                     final_noise_quant,
@@ -153,10 +160,22 @@ for quantity in quantities:
                     np.std(needed_considered_tps),
                     np.mean(tot_considered_tps),
                     np.std(tot_considered_tps),
+                    np.mean(global_step_first_encounters),
+                    np.std(global_step_first_encounters),
                     np.mean(final_norm_noise_quants),
                     np.mean(cheap_norm_noise_quants),
                 ]
             )
         print(tabulate(table_values, headers=["# " + s for s in headers]), file=output)
+        table_to_csv(
+            table_values,
+            headers,
+            summary_dir
+            + "/summary_gap_constraint_"
+            + gap_constraint
+            + "_quant_"
+            + quantity
+            + ".csv",
+        )
 
 output.close()

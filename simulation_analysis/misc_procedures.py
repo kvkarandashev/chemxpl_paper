@@ -237,3 +237,40 @@ def find_seed_with_best_candidate(dirname):
             min_val = cur_val
             min_seed_dir = seed_dir
     return min_seed_dir
+
+
+# Procedures for analyzing the graph enumeration results.
+
+
+def MC_enumeration_folder_name_param_dict(folder_name):
+    true_folder_name = os.path.basename(folder_name)
+    if len(true_folder_name) == 0:
+        true_folder_name = os.path.basename(os.path.dirname(folder_name))
+    naming_fields = true_folder_name.split("_")
+    # The ordering can be looked up in molopt/examples/chemxpl/bias_potential_checks/MC_graph_enumeration_submit.sh
+    seed = int(naming_fields[-1])
+    implicit_constraint = naming_fields[-2] == "TRUE"
+    genetic_used = naming_fields[-3] == "TRUE"
+    bias_type = naming_fields[-4]
+    nhatoms = int(naming_fields[-5])
+    return {
+        "seed": seed,
+        "implicit_constraint": implicit_constraint,
+        "genetic_used": genetic_used,
+        "bias_type": bias_type,
+        "nhatoms": nhatoms,
+    }
+
+
+import pandas as pd
+
+
+def table_to_csv(table, headers, filename):
+    """
+    Prints tables I normally use to a proper cvs.
+    """
+    data = {}
+    for h_id, h in enumerate(headers):
+        data[h] = [row[h_id] for row in table]
+    df = pd.DataFrame(data, columns=data.keys(), index=data[headers[0]])
+    df.to_csv(filename, index=False)
