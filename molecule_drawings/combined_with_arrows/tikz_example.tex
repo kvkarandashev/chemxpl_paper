@@ -1,0 +1,24 @@
+\documentclass[border=0.2cm]{standalone}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+\newcommand{\resstruct}[3]{
+    \begin{tikzpicture}
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.3\textwidth]{#1}};
+        \node[anchor=south west,inner sep=0] (image) at (0,2.0) {\includegraphics[width=0.3\textwidth]{#2}};
+        \node at (-0.3,3.0) {(#3)};
+\end{tikzpicture}
+}
+
+\begin{document}
+\begin{tikzpicture}
+\draw [blue, arrows={-Triangle[blue,fill=blue,scale=.5]}, line width=2mm](0,0) -- (1,0);
+\draw [stealth-](0,-1) -- (1,-1);
+\draw [stealth-stealth](0,-2) -- (1,-2);
+\end{tikzpicture}
+
+
+\resstruct[figures/resonance_0_0.png, figure/resonance_0_1.png, a]
+
+\end{document}

@@ -10,11 +10,11 @@ do
     joblog=$rdir/joblog.txt
     if [ ! -f $joblog ]
     then
-        joblog=$(ls $rdir/*.stdout_*)
-        if [ ! -f $joblog ]
+        if [ "$(ls $rdir/*.stdout_* | wc -l)" == "0" ]
         then
             continue
         fi
+        joblog=$(ls $rdir/*.stdout_*)
     fi
     nsteps=$(awk '{if ($1 == "HIST") {if ($3 > n) {n = $3}}} END {print n}' $joblog)
     if [ "$nsteps" != 50000 ]
