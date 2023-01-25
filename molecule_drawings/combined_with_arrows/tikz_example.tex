@@ -6,8 +6,10 @@
 \newcommand{\resstruct}[3]{
     \begin{tikzpicture}
         \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.3\textwidth]{#1}};
-        \node[anchor=south west,inner sep=0] (image) at (0,2.0) {\includegraphics[width=0.3\textwidth]{#2}};
+        \node[anchor=south west,inner sep=0] (image) at (4.0,0) {\includegraphics[width=0.3\textwidth]{#2}};
+        \draw [stealth-stealth, line width=0.5mm] (2.9,1.5) -- (4.4,1.5);
         \node at (-0.3,3.0) {(#3)};
+        
 \end{tikzpicture}
 }
 
@@ -19,6 +21,7 @@
 \end{tikzpicture}
 
 
-\resstruct[figures/resonance_0_0.png, figure/resonance_0_1.png, a]
+\resstruct{figures/resonance_0_0.png}{figures/resonance_0_1.png}{a}
+
 
 \end{document}
