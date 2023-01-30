@@ -188,6 +188,9 @@ max_ref_std = {
     },
 }
 
+# Both QM9 and EGP have methane as the compound with the largest gap.
+best_gap_val = 0.6193166670127856
+
 
 def folder_name_param_dict(folder_name):
     bname = os.path.basename(folder_name)

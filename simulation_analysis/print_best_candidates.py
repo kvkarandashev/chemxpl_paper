@@ -7,13 +7,13 @@ from bmapqml.utils import loadpkl, mkdir
 from bmapqml.chemxpl.rdkit_draw_utils import draw_chemgraph_to_file
 from sortedcontainers import SortedList
 from joblib import Parallel, delayed
-import sys, os
+import sys, os, copy
 
 pkl_file = sys.argv[1]
 
 num_init_best_candidates = 1000
 
-nprocs = 4
+nprocs = 8
 
 print("Considered restart file:", pkl_file)
 
@@ -54,7 +54,7 @@ for entry in histogram:
         if len(best_candidates) == num_init_best_candidates:
             if cur_cc > best_candidates[-1]:
                 continue
-        best_candidates.add(cur_cc)
+        best_candidates.add(copy.deepcopy(cur_cc))
         if len(best_candidates) == num_init_best_candidates + 1:
             del best_candidates[-1]
 
@@ -80,6 +80,10 @@ for i, bc in enumerate(best_candidates):
     tp.calculated_data["first_MC_step_encounter"] = num_MC_moves
     tp.calculated_data["first_global_MC_step_encounter"] = min(first_step_tuple(tp))
     del tp.calculated_data[xTB_res_label]
+
+# Clear up some memory.
+del cur_data
+del histogram
 
 # Calculate the overconverged minimized function values.
 def tp_wconv_vals(cand):

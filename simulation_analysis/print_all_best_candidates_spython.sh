@@ -25,7 +25,7 @@ do
     then
         cd $rdir
 #        log_name="$(dirname $rf)/analyze_$(basename $rf | cut -d'.' -f1).log"
-        spython --CPUs=4 --OMP_NUM_THREADS=1 $(dirname $0)/print_best_candidates.py analyze_$(basename $(dirname $rf))  $rf #> $log_name
+        spython --CPUs=16 --OMP_NUM_THREADS=1 $(dirname $0)/print_best_candidates.py analyze_$(basename $(dirname $rf))  $rf #> $log_name
         cd $MYDIR
     fi
 done

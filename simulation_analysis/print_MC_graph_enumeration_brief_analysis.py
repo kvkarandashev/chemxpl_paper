@@ -66,7 +66,6 @@ def print_param_influence_summary(all_folder_dir, implicit_constraint, nhatoms):
             for t in ["mean", "std"]:
                 headers.append(t + " " + quant + " " + headers[genetic_used] + " ")
     table = []
-    data = {}
     for bias_type in bias_types:
         row_data = {}
         for genetic_used in use_genetic_values:

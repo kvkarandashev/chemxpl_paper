@@ -4,7 +4,6 @@ from bmapqml.chemxpl.rdkit_draw_utils import (
     full_change_list,
     LIGHTBLUE,
     LIGHTRED,
-    LIGHTGREEN,
 )
 from bmapqml.utils import mkdir
 import numpy as np
@@ -19,7 +18,6 @@ chemgraph_strings = [
 ]
 
 kwargs = {
-    "size": (300, 200),
     "highlightAtomRadius": 0.4,
     "color_change": LIGHTRED,
     "color_change_neighbors": LIGHTBLUE,
@@ -35,15 +33,29 @@ kwargs = {
     },
 }
 
-for str_id, cg_str in enumerate(chemgraph_strings):
-    dump_dir = "mod_possibilities_" + str(str_id)
-    mkdir("mod_possibilities_" + str(str_id))
-    os.chdir(dump_dir)
 
-    cg = str2ChemGraph(cg_str)
+rotation = {"rotated": 90, "standard": None}
 
-    file_prefix = "test_mod_cg_" + str(str_id) + "_"
+for rotate_label in rotation.keys():
+    mkdir(rotate_label)
+    os.chdir(rotate_label)
+    for str_id, cg_str in enumerate(chemgraph_strings):
+        dump_dir = "mod_possibilities_" + str(str_id)
+        mkdir(dump_dir)
+        os.chdir(dump_dir)
 
-    draw_all_modification_possibilities(cg, file_prefix, **kwargs)
+        cg = str2ChemGraph(cg_str)
 
+        file_prefix = "test_mod_cg_" + str(str_id) + "_"
+
+        size = (300, 200)
+
+        if rotate_label == "rotated":
+            size = size[::-1]
+
+        draw_all_modification_possibilities(
+            cg, file_prefix, size=size, rotate=rotation[rotate_label], **kwargs
+        )
+
+        os.chdir("..")
     os.chdir("..")
