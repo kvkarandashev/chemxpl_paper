@@ -15,7 +15,6 @@ chemgraph_strings = [
 
 kwargs = {
     "nhatoms_range": [1, 9],
-    "size": (300, 200),
     "highlightAtomRadius": 0.4,
     "bw_palette": True,
 }
@@ -30,11 +29,5 @@ for rotate_label, rotate_val in rotation.items():
         size = size[::-1]
     mkdir(rotate_label)
     os.chdir(rotate_label)
-    draw_all_cross_couplings(
-        cgs,
-        fragment_ratio_range=[0.3, 0.7],
-        size=size,
-        rotate=rotation[rotate_label],
-        **kwargs
-    )
+    draw_all_cross_couplings(cgs, size=size, rotate=rotation[rotate_label], **kwargs)
     os.chdir("..")

@@ -268,12 +268,53 @@ def MC_enumeration_folder_name_param_dict(folder_name):
 import pandas as pd
 
 
+def table_to_data(table, headers):
+    data = {}
+    for h_id, h in enumerate(headers):
+        if h is None:
+            continue
+        data[h] = []
+        for row in table:
+            el = row[h_id]
+            if isinstance(el, int):
+                el = str(el)
+            data[h].append(el)
+    return data
+
+
+def table_to_data_transpose(table, headers):
+    all_rows = [headers] + table
+    data = {}
+    for row in all_rows:
+        for h_id, (h, el) in enumerate(zip(headers, row)):
+            if h is None:
+                continue
+            if h_id == 0:
+                used_header = el
+                data[used_header] = []
+            else:
+                if isinstance(el, int):
+                    el = str(el)
+                data[used_header].append(el)
+    return data
+
+
 def table_to_csv(table, headers, filename):
     """
     Prints tables I normally use to a proper cvs.
     """
-    data = {}
-    for h_id, h in enumerate(headers):
-        data[h] = [row[h_id] for row in table]
+    data = table_to_data(table, headers)
     df = pd.DataFrame(data, columns=data.keys(), index=data[headers[0]])
     df.to_csv(filename, index=False)
+
+
+def table_to_latex(table, latex_headers, filename, transpose=False):
+    """
+    Print tables I normally use into LaTeX.
+    """
+    if transpose:
+        data = table_to_data_transpose(table, latex_headers)
+    else:
+        data = table_to_data(table, latex_headers)
+    df = pd.DataFrame(data, columns=data.keys(), index=data[latex_headers[0]])
+    df.to_latex(filename, index=False, escape=False, float_format="{:0.3e}".format)

@@ -2,7 +2,12 @@ import os, sys, glob, subprocess
 from bmapqml.utils import mkdir
 from bmapqml.chemxpl.utils import SMILES_to_egc
 import numpy as np
-from misc_procedures import all_xyz_vals, extract_hist_size, table_to_csv
+from misc_procedures import (
+    all_xyz_vals,
+    extract_hist_size,
+    table_to_csv,
+    table_to_latex,
+)
 from tabulate import tabulate
 
 
@@ -49,6 +54,10 @@ gap_constraints = ["weak", "strong"]
 
 quantities = ["dipole", "solvation_energy"]
 
+latex_quantity_name = {"dipole": "\\dipole", "solvation_energy": "\\dEsolv"}
+
+best = {"dipole": "max.", "solvation_energy": "min."}
+
 STD_RMSE_coeff = (
     0.25  # Since for the overconverged quantity we take the average over 16 attempts.
 )
@@ -69,8 +78,8 @@ for quantity in quantities:
         headers = [
             "BIAS STRENGTH",
             "TOTAL BEST VALUE",
-            "AGREEMENT",
             "TOTAL BEST SMILES",
+            "AGREEMENT",
             "MAX BEST RMSE",
             "AV BEST VALUE",
             "STDDEV ...",
@@ -151,8 +160,8 @@ for quantity in quantities:
                 [
                     bias,
                     min_val,
-                    sum(egc == min_egc for egc in egcs),
                     min_SMILES,
+                    sum(egc == min_egc for egc in egcs),
                     max_RMSE,
                     np.mean(vals),
                     np.std(vals),
@@ -167,15 +176,47 @@ for quantity in quantities:
                 ]
             )
         print(tabulate(table_values, headers=["# " + s for s in headers]), file=output)
-        table_to_csv(
-            table_values,
-            headers,
+        summary_file_prefix = (
             summary_dir
             + "/summary_gap_constraint_"
             + gap_constraint
             + "_quant_"
             + quantity
-            + ".csv",
         )
+        table_to_csv(
+            table_values,
+            headers,
+            summary_file_prefix + ".csv",
+        )
+        fin_res_label = latex_quantity_name[quantity] + "^{\mathrm{best}}"
+        latex_headers = [
+            "bias strength",
+            best[quantity] + " $" + fin_res_label + "$",
+            None,
+            "agreement",
+            "max. RMSE ($" + fin_res_label + "$)",
+            "$\overline{" + fin_res_label + "}$",
+            "$\sigma(" + fin_res_label + ")$",
+            "$\overline{\tpreq}$",
+            "$\sigma(\tpreq)$",
+            "$\overline{\tottp}$",
+            "$\sigma(\tottp)$",
+            "$\overline{\\beststepfound}$",
+            "$\sigma(\\beststepfound)$",
+            "$\cheapquantnoise$",
+            None,
+        ]
+        for transpose in [True, False]:
+            if transpose:
+                ending = "_tr.tex"
+            else:
+                ending = ".tex"
+            table_to_latex(
+                table_values,
+                latex_headers,
+                summary_file_prefix + ending,
+                transpose=transpose,
+            )
+
 
 output.close()
