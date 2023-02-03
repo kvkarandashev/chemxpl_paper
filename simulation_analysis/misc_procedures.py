@@ -1,4 +1,6 @@
 import glob, os
+import numpy as np
+import copy
 
 
 def all_xyz_vals(xyz_file):
@@ -275,10 +277,7 @@ def table_to_data(table, headers):
             continue
         data[h] = []
         for row in table:
-            el = row[h_id]
-            if isinstance(el, int):
-                el = str(el)
-            data[h].append(el)
+            data[h].append(row[h_id])
     return data
 
 
@@ -293,8 +292,6 @@ def table_to_data_transpose(table, headers):
                 used_header = el
                 data[used_header] = []
             else:
-                if isinstance(el, int):
-                    el = str(el)
                 data[used_header].append(el)
     return data
 
@@ -308,13 +305,65 @@ def table_to_csv(table, headers, filename):
     df.to_csv(filename, index=False)
 
 
-def table_to_latex(table, latex_headers, filename, transpose=False):
+def latex_scientific(number_in):
+    def_sci = "{:0.3e}".format(number_in)
+    parts = def_sci.split("e")
+    output = parts[0]
+    if len(parts) > 1:
+        extra = parts[1]
+        if extra != "+00":
+            output += "\cdot 10^{" + str(int(extra)) + "}"
+    return output
+
+
+class latex_table_format:
+    def __init__(self, present_negative=False):
+        self.present_negative = present_negative
+
+    def __call__(self, number_in):
+        if isinstance(number_in, str):
+            return number_in
+        if isinstance(number_in, int):
+            output = str(number_in)
+        else:
+            #            output="{:0.3e}".format(number_in)
+            output = latex_scientific(number_in)
+        if self.present_negative and number_in >= 0:
+            output = "\phantom{-}" + output
+        output = "$" + output + "$"
+        return output
+
+
+def table_to_latex(
+    table, latex_headers, filename, transpose=False, data=None, **to_latex_kwargs
+):
     """
     Print tables I normally use into LaTeX.
     """
-    if transpose:
-        data = table_to_data_transpose(table, latex_headers)
-    else:
-        data = table_to_data(table, latex_headers)
-    df = pd.DataFrame(data, columns=data.keys(), index=data[latex_headers[0]])
-    df.to_latex(filename, index=False, escape=False, float_format="{:0.3e}".format)
+    if data is None:
+        if transpose:
+            data = table_to_data_transpose(table, latex_headers)
+        else:
+            data = table_to_data(table, latex_headers)
+
+    present_negative = False
+    for k in data.keys():
+        for v in data[k]:
+            if isinstance(v, np.float):
+                if v < 0:
+                    present_negative = True
+    lf = latex_table_format(present_negative=present_negative)
+
+    converted_data = {}
+    for k, vals in data.items():
+        converted_data[k] = []
+        for v in vals:
+            converted_data[k].append(lf(v))
+
+    df = pd.DataFrame(
+        converted_data,
+        columns=converted_data.keys(),
+        index=converted_data[latex_headers[0]],
+    )
+
+    df.to_latex(filename, index=False, escape=False, **to_latex_kwargs)
