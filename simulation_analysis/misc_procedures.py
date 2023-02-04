@@ -1,4 +1,6 @@
 import glob, os
+import numpy as np
+import copy
 
 
 def all_xyz_vals(xyz_file):
@@ -188,6 +190,9 @@ max_ref_std = {
     },
 }
 
+# Both QM9 and EGP have methane as the compound with the largest gap.
+best_gap_val = 0.6193166670127856
+
 
 def folder_name_param_dict(folder_name):
     bname = os.path.basename(folder_name)
@@ -237,3 +242,128 @@ def find_seed_with_best_candidate(dirname):
             min_val = cur_val
             min_seed_dir = seed_dir
     return min_seed_dir
+
+
+# Procedures for analyzing the graph enumeration results.
+
+
+def MC_enumeration_folder_name_param_dict(folder_name):
+    true_folder_name = os.path.basename(folder_name)
+    if len(true_folder_name) == 0:
+        true_folder_name = os.path.basename(os.path.dirname(folder_name))
+    naming_fields = true_folder_name.split("_")
+    # The ordering can be looked up in molopt/examples/chemxpl/bias_potential_checks/MC_graph_enumeration_submit.sh
+    seed = int(naming_fields[-1])
+    implicit_constraint = naming_fields[-2] == "TRUE"
+    genetic_used = naming_fields[-3] == "TRUE"
+    bias_type = naming_fields[-4]
+    nhatoms = int(naming_fields[-5])
+    return {
+        "seed": seed,
+        "implicit_constraint": implicit_constraint,
+        "genetic_used": genetic_used,
+        "bias_type": bias_type,
+        "nhatoms": nhatoms,
+    }
+
+
+import pandas as pd
+
+
+def table_to_data(table, headers):
+    data = {}
+    for h_id, h in enumerate(headers):
+        if h is None:
+            continue
+        data[h] = []
+        for row in table:
+            data[h].append(row[h_id])
+    return data
+
+
+def table_to_data_transpose(table, headers):
+    all_rows = [headers] + table
+    data = {}
+    for row in all_rows:
+        for h_id, (h, el) in enumerate(zip(headers, row)):
+            if h is None:
+                continue
+            if h_id == 0:
+                used_header = el
+                data[used_header] = []
+            else:
+                data[used_header].append(el)
+    return data
+
+
+def table_to_csv(table, headers, filename):
+    """
+    Prints tables I normally use to a proper cvs.
+    """
+    data = table_to_data(table, headers)
+    df = pd.DataFrame(data, columns=data.keys(), index=data[headers[0]])
+    df.to_csv(filename, index=False)
+
+
+def latex_scientific(number_in):
+    def_sci = "{:0.3e}".format(number_in)
+    parts = def_sci.split("e")
+    output = parts[0]
+    if len(parts) > 1:
+        extra = parts[1]
+        if extra != "+00":
+            output += "\cdot 10^{" + str(int(extra)) + "}"
+    return output
+
+
+class latex_table_format:
+    def __init__(self, present_negative=False):
+        self.present_negative = present_negative
+
+    def __call__(self, number_in):
+        if isinstance(number_in, str):
+            return number_in
+        if isinstance(number_in, int):
+            output = str(number_in)
+        else:
+            #            output="{:0.3e}".format(number_in)
+            output = latex_scientific(number_in)
+        if self.present_negative and number_in >= 0:
+            output = "\phantom{-}" + output
+        output = "$" + output + "$"
+        return output
+
+
+def table_to_latex(
+    table, latex_headers, filename, transpose=False, data=None, **to_latex_kwargs
+):
+    """
+    Print tables I normally use into LaTeX.
+    """
+    if data is None:
+        if transpose:
+            data = table_to_data_transpose(table, latex_headers)
+        else:
+            data = table_to_data(table, latex_headers)
+
+    present_negative = False
+    for k in data.keys():
+        for v in data[k]:
+            if isinstance(v, np.float):
+                if v < 0:
+                    present_negative = True
+    lf = latex_table_format(present_negative=present_negative)
+
+    converted_data = {}
+    for k, vals in data.items():
+        converted_data[k] = []
+        for v in vals:
+            converted_data[k].append(lf(v))
+
+    df = pd.DataFrame(
+        converted_data,
+        columns=converted_data.keys(),
+        index=converted_data[latex_headers[0]],
+    )
+
+    df.to_latex(filename, index=False, escape=False, **to_latex_kwargs)

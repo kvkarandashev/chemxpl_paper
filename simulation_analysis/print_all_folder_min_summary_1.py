@@ -1,8 +1,14 @@
 import os, sys, glob, subprocess
 from bmapqml.utils import mkdir
 from bmapqml.chemxpl.utils import SMILES_to_egc
+from bmapqml.chemxpl.rdkit_draw_utils import draw_all_possible_resonance_structures
 import numpy as np
-from misc_procedures import all_xyz_vals, extract_hist_size
+from misc_procedures import (
+    all_xyz_vals,
+    extract_hist_size,
+    table_to_csv,
+    table_to_latex,
+)
 from tabulate import tabulate
 
 
@@ -49,11 +55,15 @@ gap_constraints = ["weak", "strong"]
 
 quantities = ["dipole", "solvation_energy"]
 
-STD_RMSE_coeff = (
-    0.25  # Since for the overconverged quantity we take the average over 16 attempts.
-)
+latex_quantity_name = {"dipole": "\\dipole", "solvation_energy": "\\dEsolv"}
+
+best = {"dipole": "max.", "solvation_energy": "min."}
+# Since for the overconverged quantity we take the average over 16 attempts.
+STD_RMSE_coeff = 0.25
 
 output = open(summary_dir + "/all_output.txt", "w")
+
+runner_up_SMILES = {}
 
 for quantity in quantities:
     for gap_constraint in gap_constraints:
@@ -69,14 +79,16 @@ for quantity in quantities:
         headers = [
             "BIAS STRENGTH",
             "TOTAL BEST VALUE",
-            "AGREEMENT",
             "TOTAL BEST SMILES",
+            "AGREEMENT",
             "MAX BEST RMSE",
             "AV BEST VALUE",
             "STDDEV ...",
             "AV REQ CONSIDERED TPS",
             "STDDEV ...",
             "AV TOT CONSIDERED TPS",
+            "STDDEV ...",
+            "AV STEP BEST FOUND",
             "STDDEV ...",
             "NORM FINAL MIN NOISE",
             "NORM CHEAP ...",
@@ -96,6 +108,7 @@ for quantity in quantities:
             vals = []
             needed_considered_tps = []
             tot_considered_tps = []
+            global_step_first_encounters = []
             final_norm_noise_quants = []
             cheap_norm_noise_quants = []
             for data_dir in glob.glob(folder + "/data_*"):
@@ -113,6 +126,10 @@ for quantity in quantities:
                 tot_considered_tps.append(extract_hist_size(data_dir))
 
                 needed_considered_tps.append(float(xyz_vals["req_num_tps"]))
+
+                global_step_first_encounters.append(
+                    float(xyz_vals["first_global_MC_step_encounter"])
+                )
 
                 (
                     final_noise_quant,
@@ -138,14 +155,43 @@ for quantity in quantities:
                         summary_dir + "/best" + bulk_name + "." + ending,
                     ]
                 )
+
             egcs = [SMILES_to_egc(s) for s in all_SMILES]
             min_egc = SMILES_to_egc(min_SMILES)
+            # Also replot SMILES in a format fitting for the paper.
+            png_dir = "best" + bulk_name + "_pngs"
+            mkdir(png_dir)
+            os.chdir(png_dir)
+            draw_all_possible_resonance_structures(
+                min_egc.chemgraph,
+                "best" + bulk_name + "_rot_",
+                size=(200, 300),
+                rotate=90,
+                bw_palette=True,
+            )
+            draw_all_possible_resonance_structures(
+                min_egc.chemgraph,
+                "best" + bulk_name + "_",
+                size=(300, 200),
+                rotate=None,
+                bw_palette=True,
+            )
+            os.chdir("..")
+            for SMILES in all_SMILES:
+                if min_SMILES == SMILES:
+                    continue
+                if SMILES not in runner_up_SMILES:
+                    runner_up_SMILES[SMILES] = {}
+                if bulk_name not in runner_up_SMILES[SMILES]:
+                    runner_up_SMILES[SMILES][bulk_name] = 0
+                runner_up_SMILES[SMILES][bulk_name] += 1
+
             table_values.append(
                 [
                     bias,
                     min_val,
-                    sum(egc == min_egc for egc in egcs),
                     min_SMILES,
+                    sum(egc == min_egc for egc in egcs),
                     max_RMSE,
                     np.mean(vals),
                     np.std(vals),
@@ -153,10 +199,159 @@ for quantity in quantities:
                     np.std(needed_considered_tps),
                     np.mean(tot_considered_tps),
                     np.std(tot_considered_tps),
+                    np.mean(global_step_first_encounters),
+                    np.std(global_step_first_encounters),
                     np.mean(final_norm_noise_quants),
                     np.mean(cheap_norm_noise_quants),
                 ]
             )
         print(tabulate(table_values, headers=["# " + s for s in headers]), file=output)
+        summary_file_prefix = (
+            summary_dir
+            + "/summary_gap_constraint_"
+            + gap_constraint
+            + "_quant_"
+            + quantity
+        )
+        table_to_csv(
+            table_values,
+            headers,
+            summary_file_prefix + ".csv",
+        )
+        fin_res_label = latex_quantity_name[quantity] + "^{\mathrm{best}}"
+        latex_headers = [
+            "bias strength",
+            best[quantity] + " $" + fin_res_label + "$, a.u.",
+            None,
+            "agreement",
+            "max. RMSE ($" + fin_res_label + "$), a.u.",
+            "$\overline{" + fin_res_label + "}$, a.u.",
+            "$\sigma(" + fin_res_label + ")$, a.u.",
+            "$\overline{\tpreq}$",
+            "$\sigma(\tpreq)$",
+            "$\overline{\tottp}$",
+            "$\sigma(\tottp)$",
+            "$\overline{\\beststepfound}$",
+            "$\sigma(\\beststepfound)$",
+            "$\cheapquantnoise$",
+            None,
+        ]
+        for transpose in [True, False]:
+            if transpose:
+                ending = "_tr.tex"
+            else:
+                ending = ".tex"
+            table_to_latex(
+                table_values,
+                latex_headers,
+                summary_file_prefix + ending,
+                transpose=transpose,
+            )
+
 
 output.close()
+
+from string import ascii_uppercase
+
+runner_ups = "runner_ups"
+
+mkdir(runner_ups)
+os.chdir(runner_ups)
+runner_up_output = open("runner_ups.txt", "w")
+better_ordering = [1, 2, 4, 0, 3, 5]
+ruS = list(runner_up_SMILES.keys())
+if len(better_ordering) != len(ruS):
+    raise Exception("wrong better ordering")
+
+runner_up_table = []
+reordered_SMILES = []
+
+
+def runnerup_name(i):
+    return "\runnerupmol{" + str(i + 1) + "}"
+
+
+for j, pref_id in enumerate(better_ordering):
+    s = ruS[pref_id]
+    enc_data = runner_up_SMILES[s]
+    char = ascii_uppercase[j]
+    print(char, s, ":", file=runner_up_output)
+    for prob, enc in enc_data.items():
+        print(prob, enc, file=runner_up_output)
+    draw_all_possible_resonance_structures(
+        SMILES_to_egc(s).chemgraph,
+        char + "_",
+        size=(200, 300),
+        rotate=90,
+        bw_palette=True,
+    )
+    checked_SMILES = ""
+    for c in s:
+        if c == "#":
+            checked_SMILES += "\\" + c
+        else:
+            checked_SMILES += c
+    runner_up_table.append([runnerup_name(j), checked_SMILES])
+    reordered_SMILES.append(s)
+
+runner_up_output.close()
+
+phantom = "\phantom{\_}"
+
+# def brute_multcol(s, ncols):
+#    return "\multicolumn{"+str(ncols)+"}"+"{l}{"+s+"}"
+
+# angle_header=("optimized quantity", "gap constraint", "biasing")
+
+# runner_up_headers=[angle_header, tuple(phantom for _ in range(len(angle_header)))]
+
+
+def multrow(s, nrows):
+    return tuple(
+        ["\multirow{" + str(nrows) + "}{*}{" + s + "}"]
+        + [phantom for _ in range(nrows - 1)]
+    )
+
+
+runner_up_headers = [multrow(s, 3) for s in ["molecule", "SMILES"]]
+
+bulk_names = []
+
+
+def rotatebox(s):
+    #    return "\rotatebox[origin=l]{90}{"+bias+"}")
+    return "\STAB{\rotatebox[origin=l]{90}{" + s + "}}"
+
+
+for quantity in quantities[::-1]:
+    for gap_constraint in gap_constraints:
+        for bias in biases:
+            bulk_name = "_" + bias + "_" + gap_constraint + "_" + quantity
+            bulk_names.append(bulk_name)
+            runner_up_headers.append(
+                (
+                    "opt. $" + latex_quantity_name[quantity] + "$",
+                    gap_constraint,
+                    rotatebox(bias),
+                )
+            )
+#            runner_up_headers.append(("opt. $"+latex_quantity_name[quantity]+"$", gap_constraint, bias[0]))
+
+for row_id, s in enumerate(reordered_SMILES):
+    for bulk_name in bulk_names:
+        num_dict = runner_up_SMILES[s]
+        if bulk_name in num_dict:
+            num = num_dict[bulk_name]
+        else:
+            num = 0
+        runner_up_table[row_id].append(num)
+
+
+table_to_latex(
+    runner_up_table,
+    runner_up_headers,
+    "runner_up_table.tex",
+    transpose=False,
+    multicolumn=True,
+    multirow=True,
+)

@@ -14,17 +14,20 @@ chemgraph_strings = [
 ]
 
 kwargs = {
-    "nhatoms_range" : [1, 9],
-    "size": (300, 200),
+    "nhatoms_range": [1, 9],
     "highlightAtomRadius": 0.4,
     "bw_palette": True,
 }
 
 cgs = [str2ChemGraph(cg_str) for cg_str in chemgraph_strings]
 
-folder_name = "cross_couplings"
-mkdir(folder_name)
-os.chdir(folder_name)
+rotation = {"rotated": 90, "standard": None}
 
-draw_all_cross_couplings(cgs, fragment_ratio_range=[.3, .7], **kwargs)
-os.chdir("..")
+for rotate_label, rotate_val in rotation.items():
+    size = (300, 200)
+    if rotate_label == "rotated":
+        size = size[::-1]
+    mkdir(rotate_label)
+    os.chdir(rotate_label)
+    draw_all_cross_couplings(cgs, size=size, rotate=rotation[rotate_label], **kwargs)
+    os.chdir("..")

@@ -10,11 +10,11 @@ do
     joblog=$rdir/joblog.txt
     if [ ! -f $joblog ]
     then
-        joblog=$(ls $rdir/*.stdout_*)
-        if [ ! -f $joblog ]
+        if [ "$(ls $rdir/*.stdout_* | wc -l)" == "0" ]
         then
             continue
         fi
+        joblog=$(ls $rdir/*.stdout_*)
     fi
     nsteps=$(awk '{if ($1 == "HIST") {if ($3 > n) {n = $3}}} END {print n}' $joblog)
     if [ "$nsteps" != 50000 ]
@@ -25,7 +25,7 @@ do
     then
         cd $rdir
 #        log_name="$(dirname $rf)/analyze_$(basename $rf | cut -d'.' -f1).log"
-        spython --CPUs=4 --OMP_NUM_THREADS=1 $(dirname $0)/print_best_candidates.py analyze_$(basename $(dirname $rf))  $rf #> $log_name
+        spython --CPUs=16 --OMP_NUM_THREADS=1 $(dirname $0)/print_best_candidates.py analyze_$(basename $(dirname $rf))  $rf #> $log_name
         cd $MYDIR
     fi
 done
