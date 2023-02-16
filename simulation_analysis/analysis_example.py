@@ -2,8 +2,6 @@ from bmapqml.chemxpl.plotting import Analyze,Chem_Div
 from folder_translator import folder_name_param_dict
 import os
 import pdb
-import numpy as np
-import matplotlib.pyplot as plt
 
 import pandas as pd
 
@@ -58,26 +56,23 @@ if __name__ == '__main__':
 
             ALL_HISTOGRAMS, GLOBAL_HISTOGRAM, ALL_TRAJECTORIES = ana.parse_results()
             
-            #pdb.set_trace()
             global_MC_step_counter = ana.global_MC_step_counter
             print(global_MC_step_counter)
             n_steps_log.write("{}\t{}\n".format(sim_name.split("/")[-1],global_MC_step_counter))
-            #
-            PARETO_CORRECTED = ana.pareto_correct(GLOBAL_HISTOGRAM)
+            PARETO_CORRECTED = ana.pareto(mode="trajectory")
             PARETO_CORRECTED.to_csv("/data/jan/konstantin_plots/log/{}.csv".format(sim_name.split("/")[-1]))
             ALL_TRAJECTORIES.to_csv("/data/jan/konstantin_plots/log/traj_{}.csv".format(sim_name.split("/")[-1]))
 
-            time_ordered_smiles = ana.time_ordered_smiles
+            #time_ordered_smiles = ana.time_ordered_smiles
             #dump time ordered smiles to np file
-            np.save("/data/jan/konstantin_plots/log/smiles_{}.npy".format(sim_name.split("/")[-1]), time_ordered_smiles)
-            
-            ana_chem = Chem_Div(traj = time_ordered_smiles, subsample = 1000, verbose = True)
-            ana_chem.compute_representations()
-            ana_chem.compute_diversity()
-            plt.plot(ana_chem.N, ana_chem.diversity)
-            plt.show()
-            pdb.set_trace()
-            ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="encounter")
-            ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val, coloring="density")
+            #np.save("/data/jan/konstantin_plots/log/smiles_{}.npy".format(sim_name.split("/")[-1]), time_ordered_smiles)
+            #ana_chem = Chem_Div(traj = time_ordered_smiles, subsample = 1000, verbose = True)
+            #ana_chem.compute_representations()
+            #ana_chem.compute_diversity()
+            #plt.plot(ana_chem.N, ana_chem.diversity)
+            #plt.show()
+            #pdb.set_trace()
+            ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val,dataset=DATASET ,coloring="encounter")
+            ana.plot_pareto(sim_name, hline=gap_constr_val, vline=best_ref_val,dataset=DATASET ,coloring="density")
             
     n_steps_log.close()
