@@ -1,10 +1,9 @@
-import numpy as np
 from bmapqml.utils import loadpkl
 from bmapqml.chemxpl.ext_graph_compound import ExtGraphCompound
 from bmapqml.chemxpl.valence_treatment import str2ChemGraph
 from bmapqml.chemxpl.random_walk import egc_valid_wrt_change_params
 import pandas as pd
-from bmapqml.chemxpl.rdkit_utils import chemgraph_to_canonical_rdkit, SMILES_to_egc
+from bmapqml.chemxpl.rdkit_utils import chemgraph_to_canonical_rdkit
 from sortedcontainers import SortedList
 from bmapqml.data import NUCLEAR_CHARGE
 from bmapqml.dataset_processing.qm9_format_specs import read_SMILES
@@ -67,15 +66,25 @@ gap_constraint_vals = {"weak": 0.08895587351640835, "strong": 0.1773476650969661
 gap_name = "HOMO_LUMO_gap"
 
 
-def compliant_egc_list(egcs, gap_constraint=None, **chemspace_constraints):
+def compliant_egc_list(egcs, gap_constraint=None, chemspace_constraint=None):
     if gap_constraint is None:
         unconv_counter = 0
         egcs_converged = []
+    if chemspace_constraint is None:
+        chemspace_constraint_dict = {}
+    else:
+        chemspace_constraint_dict = {
+            "forbidden_bonds": forbidden_bonds[chemspace_constraint],
+            "not_protonated": not_protonated[chemspace_constraint],
+            "nhatoms_range": nhatoms_range[chemspace_constraint],
+            "possible_elements": possible_elements[chemspace_constraint],
+        }
+
     output = []
     for egc in egcs:
         if egc is None:
             continue
-        if egc_valid_wrt_change_params(egc, **chemspace_constraints):
+        if egc_valid_wrt_change_params(egc, **chemspace_constraint_dict):
             gap_val = egc.additional_data["mean"][gap_name]
             if gap_val is None:
                 if gap_constraint is None:
@@ -92,6 +101,7 @@ def compliant_egc_list(egcs, gap_constraint=None, **chemspace_constraints):
         print("Unconverged calculation counter:", unconv_counter)
         print("Elements for converged:")
         print_present_heavy_elements(egcs_converged)
+        print("Number of converged calculations:", len(egcs_converged))
     return output
 
 
@@ -151,20 +161,15 @@ def dataset_table_row(reference_dataset):
     table_row = [len(tot_egc_list)]
     SMILES_file_prefix = "SMILES_" + reference_dataset + "_"
 
-    chemspace_constraints = {
-        "forbidden_bonds": forbidden_bonds[reference_dataset],
-        "not_protonated": not_protonated[reference_dataset],
-        "nhatoms_range": nhatoms_range[reference_dataset],
-        "possible_elements": possible_elements[reference_dataset],
-    }
-
     print("Reference dataset:", reference_dataset)
     print_present_heavy_elements(tot_egc_list)
 
     print_canon_SMILES(tot_egc_list, SMILES_file_prefix + "full.txt")
     for gap_constraint in gap_constraints:
         cur_egc_list = compliant_egc_list(
-            tot_egc_list, gap_constraint=gap_constraint, **chemspace_constraints
+            tot_egc_list,
+            gap_constraint=gap_constraint,
+            chemspace_constraint=reference_dataset,
         )
         print_canon_SMILES(
             cur_egc_list,

@@ -63,7 +63,9 @@ STD_RMSE_coeff = 0.25
 
 output = open(summary_dir + "/all_output.txt", "w")
 
-runner_up_SMILES = {}
+candidate_SMILES = {}
+
+best_SMILES = []
 
 for quantity in quantities:
     for gap_constraint in gap_constraints:
@@ -177,14 +179,13 @@ for quantity in quantities:
                 bw_palette=True,
             )
             os.chdir("..")
+            best_SMILES.append(min_SMILES)
             for SMILES in all_SMILES:
-                if min_SMILES == SMILES:
-                    continue
-                if SMILES not in runner_up_SMILES:
-                    runner_up_SMILES[SMILES] = {}
-                if bulk_name not in runner_up_SMILES[SMILES]:
-                    runner_up_SMILES[SMILES][bulk_name] = 0
-                runner_up_SMILES[SMILES][bulk_name] += 1
+                if SMILES not in candidate_SMILES:
+                    candidate_SMILES[SMILES] = {}
+                if bulk_name not in candidate_SMILES[SMILES]:
+                    candidate_SMILES[SMILES][bulk_name] = 0
+                candidate_SMILES[SMILES][bulk_name] += 1
 
             table_values.append(
                 [
@@ -251,48 +252,70 @@ for quantity in quantities:
 
 output.close()
 
-from string import ascii_uppercase
-
 runner_ups = "runner_ups"
 
 mkdir(runner_ups)
 os.chdir(runner_ups)
 runner_up_output = open("runner_ups.txt", "w")
-better_ordering = [1, 2, 4, 0, 3, 5]
-ruS = list(runner_up_SMILES.keys())
-if len(better_ordering) != len(ruS):
-    raise Exception("wrong better ordering")
+better_runnerup_ordering = [1, 2, 4, 0, 3, 5]
+better_candidate_ordering = [2, 3, 0, 1]
+
+unordered_best = []
+unordered_runnerup = []
+
+candS = list(candidate_SMILES.keys())
+for S in candS:
+    if S in best_SMILES:
+        unordered_best.append(S)
+    else:
+        unordered_runnerup.append(S)
+
+ordered_best = [unordered_best[i] for i in better_candidate_ordering]
+ordered_runnerup = [unordered_runnerup[i] for i in better_runnerup_ordering]
+
+image_label_prefix = {True: "C", False: "R"}
+
+LaTeX_label_prefix = {True: "\\bestcand", False: "\runnerupmol"}
+
+all_printed_SMILES = []
+
+for is_best, l in zip([True, False], [ordered_best, ordered_runnerup]):
+    all_printed_SMILES += [(i, S, is_best) for i, S in enumerate(l)]
+
+
+def image_label(i, is_best):
+    return image_label_prefix[is_best] + str(i + 1)
+
+
+def LaTeX_label(i, is_best):
+    return LaTeX_label_prefix[is_best] + "{" + str(i + 1) + "}"
+
 
 runner_up_table = []
+
 reordered_SMILES = []
 
-
-def runnerup_name(i):
-    return "\runnerupmol{" + str(i + 1) + "}"
-
-
-for j, pref_id in enumerate(better_ordering):
-    s = ruS[pref_id]
-    enc_data = runner_up_SMILES[s]
-    char = ascii_uppercase[j]
-    print(char, s, ":", file=runner_up_output)
+for i, S, is_best in all_printed_SMILES:
+    image_name = image_label(i, is_best)
+    enc_data = candidate_SMILES[S]
+    print(image_name, S, ":", file=runner_up_output)
     for prob, enc in enc_data.items():
         print(prob, enc, file=runner_up_output)
     draw_all_possible_resonance_structures(
-        SMILES_to_egc(s).chemgraph,
-        char + "_",
+        SMILES_to_egc(S).chemgraph,
+        image_name + "_",
         size=(200, 300),
         rotate=90,
         bw_palette=True,
     )
     checked_SMILES = ""
-    for c in s:
+    for c in S:
         if c == "#":
             checked_SMILES += "\\" + c
         else:
             checked_SMILES += c
-    runner_up_table.append([runnerup_name(j), checked_SMILES])
-    reordered_SMILES.append(s)
+    runner_up_table.append([LaTeX_label(i, is_best), checked_SMILES])
+    reordered_SMILES.append(S)
 
 runner_up_output.close()
 
@@ -339,7 +362,7 @@ for quantity in quantities[::-1]:
 
 for row_id, s in enumerate(reordered_SMILES):
     for bulk_name in bulk_names:
-        num_dict = runner_up_SMILES[s]
+        num_dict = candidate_SMILES[s]
         if bulk_name in num_dict:
             num = num_dict[bulk_name]
         else:
