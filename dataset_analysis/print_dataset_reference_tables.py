@@ -89,7 +89,7 @@ def find_extrema(egcs, mean_or_std, quant_name, find_max):
     return format_func(best_val), "$\phantom{-}$" + best_SMILES
 
 
-hnum_mol = "num mol."
+hnum_mol = "num. mol."
 hmin_dEsolv = "min. $\dEsolv^{\mathrm{conv.}}$, a.u."
 hsmin_dEsolv = "min. $\dEsolv^{\mathrm{conv.}}$ SMILES"
 hmax_RMSE_dEsolv = "max. RMSE($\dEsolv^{\mathrm{conv.}}$), a.u."
@@ -154,7 +154,7 @@ def main():
                 all_egcs, gap_constraint=gap_constr, chemspace_constraint=ref_dataset
             )
             #            cur_h = (multcol(ref_dataset, 2), gap_constr)
-            cur_h = gap_constr
+            cur_h = "$\phantom{-}$" + gap_constr
             extrema_dict = egc_extrema_dictionnary(relevant_egcs)
             table[cur_h] = [extrema_dict[eh] for eh in extrema_headers]
 

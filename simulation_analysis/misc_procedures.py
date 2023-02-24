@@ -1,6 +1,5 @@
 import glob, os
 import numpy as np
-import copy
 
 
 def all_xyz_vals(xyz_file):
