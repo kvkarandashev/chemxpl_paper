@@ -355,9 +355,16 @@ def table_to_latex(
 
     converted_data = {}
     for k, vals in data.items():
-        converted_data[k] = []
+        arr = []
+        true_k = None
         for v in vals:
-            converted_data[k].append(lf(v))
+            arr.append(lf(v))
+            if (true_k is None) and present_negative:
+                if isinstance(v, np.float):
+                    true_k = "$\phantom{-}$" + k
+        if true_k is None:
+            true_k = k
+        converted_data[true_k] = arr
 
     df = pd.DataFrame(
         converted_data,
