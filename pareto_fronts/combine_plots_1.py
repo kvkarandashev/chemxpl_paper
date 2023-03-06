@@ -79,9 +79,7 @@ def combine_pareto_plots(dataset, quantity, file_prefix):
         df.to_latex(
             file_prefix + "_tab.tex", index=False, escape=False, multicolumn=True
         )
-    subprocess.run(
-        ["./plot_combined.sh", file_prefix + "_tab.tex", file_prefix + ".tex"]
-    )
+    subprocess.run(["./plot_combined.sh", file_prefix + "_tab", file_prefix])
 
 
 def main():

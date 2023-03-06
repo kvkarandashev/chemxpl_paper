@@ -6,7 +6,9 @@ dl=2
 tab_latex=$1
 final_latex=$2
 
-cat > $final_latex << EOF
+final_latex_full=$final_latex.tex
+
+cat > $final_latex_full << EOF
 \documentclass[preview]{standalone}%
 \usepackage{amsmath,amsfonts,amsthm}
 \usepackage{placeins}
@@ -27,11 +29,15 @@ cat > $final_latex << EOF
 \centering
 EOF
 
-sed "s/llll/cccc/g" $tab_latex | grep -v "rule"  >> $final_latex
+sed "s/llll/cccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
 
-cat >> $final_latex << EOF
+cat >> $final_latex_full << EOF
 \end{figure}
 
 \end{document}
 EOF
-pdflatex $final_latex
+pdflatex $final_latex_full
+
+pdftoppm $final_latex.pdf $final_latex -png
+
+mv $final_latex-1.png $final_latex.png

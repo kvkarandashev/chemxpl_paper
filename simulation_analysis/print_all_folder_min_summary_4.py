@@ -4,6 +4,7 @@ from bmapqml.chemxpl.utils import SMILES_to_egc
 from bmapqml.chemxpl.rdkit_draw_utils import draw_all_possible_resonance_structures
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 from misc_procedures import (
     all_xyz_vals,
     extract_hist_size,
@@ -133,10 +134,12 @@ class EncDict:
             + str(self.best_quant_est_RMSE)
         )
 
-    def latex_val(self):
+    def latex_val(self, phantom_minus_alignment=False):
         output = "$"
-        if self.best_quant_est > 0.0:
-            output += "\phantom{-}"
+        #        if self.best_quant_est > 0.0:
+        if phantom_minus_alignment:
+            if self.best_quant_est > 0.0:
+                output += "\phantom{-}"
         output += (
             latex_scientific(self.best_quant_est)
             + "\pm"
@@ -457,19 +460,21 @@ for SMILES in ordered:
         cur_id = runner_up_id
     image_name = image_label(cur_id, is_best)
     enc_data = candidate_SMILES[SMILES]
+    cg = SMILES_to_egc(SMILES).chemgraph
     draw_all_possible_resonance_structures(
-        SMILES_to_egc(SMILES).chemgraph,
+        cg,
         image_name + "_",
         size=(200, 300),
         rotate=90,
         bw_palette=True,
     )
     draw_all_possible_resonance_structures(
-        SMILES_to_egc(SMILES).chemgraph,
+        cg,
         image_name + "_rot_",
         size=(300, 200),
         bw_palette=True,
     )
+
     if enc_data.opt_prob_label != cur_opt_prob:
         cur_opt_prob = enc_data.opt_prob_label
         extra_row = cur_opt_prob.opt_name_row()
@@ -486,13 +491,19 @@ for SMILES in ordered:
 
     cur_enc_data = candidate_SMILES[SMILES]
 
-    new_row = [LaTeX_label(cur_id, is_best), checked_SMILES, cur_enc_data.latex_val()]
+    new_row = [
+        LaTeX_label(cur_id, is_best),
+        checked_SMILES,
+        cur_enc_data.latex_val(phantom_minus_alignment=True),
+    ]
+    new_row1 = [LaTeX_label(cur_id, is_best), checked_SMILES, cur_enc_data.latex_val()]
 
     for bias in biases:
         new_row.append(cur_enc_data.dict[bias])
+        new_row1.append(cur_enc_data.dict[bias])
 
     runner_up_table.append(new_row)
-    individual_runner_up_tables[cur_opt_prob].append(new_row)
+    individual_runner_up_tables[cur_opt_prob].append(new_row1)
 
 with pd.option_context("max_colwidth", max_colwidth):
     table_to_latex(
@@ -504,13 +515,23 @@ with pd.option_context("max_colwidth", max_colwidth):
         multirow=True,
     )
     for opt_prob, tab in individual_runner_up_tables.items():
+        cur_runner_up_table = deepcopy(all_runner_up_headers)
+        latex_opt = latex_quantity_name[opt_prob.quant] + "^{\\mathrm{conv.}}"
+        if opt_prob.quant == "solvation_energy":
+            latex_opt = "\phantom{-}" + latex_opt
+        cur_runner_up_table[2] = multrow("$" + latex_opt + "$", 2)
         table_to_latex(
             tab,
-            all_runner_up_headers,
+            cur_runner_up_table,
             "runner_up_table_" + str(opt_prob) + ".tex",
             transpose=False,
             multicolumn=True,
             multirow=True,
         )
+        ruStxt = "runner_up_SMILES_" + str(opt_prob) + ".txt"
+        with open(ruStxt, "w") as SMILES_txt:
+            for row in tab[::-1]:
+                print(row[1], file=SMILES_txt)
+        subprocess.run(["sed", "-i", "s/\\\\#/#/g", ruStxt])
 
 subprocess.run(["../../final_summary_postproc.sh", "runner_up_table.tex"])
