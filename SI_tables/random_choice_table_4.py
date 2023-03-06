@@ -1,37 +1,37 @@
 choice_order = {
-    "add node (\mutationlabel{1}a)": [
+    "add node (\elementarychange{1}a)": [
         "type of heavy element to be added",
         "node to which the new node will be connected with a covalent bond",
         "order of the new covalent bond",
     ],
-    "remove node (\mutationlabel{1}b)": [
+    "remove node (\elementarychange{1}b)": [
         "type of heavy element to be removed",
         "removed node",
     ],
-    "change bond order (\mutationlabel{2})": [
+    "change bond order (\elementarychange{2})": [
         "step by which bond order is changed",
         "altered pair of nodes",
         "resonance structure",
     ],
-    "replace heavy atom (\mutationlabel{3})": [
+    "replace heavy atom (\elementarychange{3})": [
         "type of heavy atom to be created",
         "changed node",
     ],
-    "change valence / change hydrogen number (\mutationlabel{4})": [
+    "change valence / change hydrogen number (\elementarychange{4})": [
         "node whose valence is to be changed",
         "new number of hydrogens connected to the node",
     ],
-    "change valence / add heavy atoms (\mutationlabel{5}a)": [
+    "change valence / add heavy atoms (\elementarychange{5}a)": [
         "element of the added nodes",
         "node to which the created nodes will be connected via covalent bonds",
         "order of the new covalent bonds",
     ],
-    "change valence / remove heavy atoms (\mutationlabel{5}b)": [
+    "change valence / remove heavy atoms (\elementarychange{5}b)": [
         "removed nodes element",
         "node whose neighbors will be removed",
         "order of covalent bonds connecting removed nodes to the molecule",
     ],
-    "change valence / change bond order (\mutationlabel{6})": [
+    "change valence / change bond order (\elementarychange{6})": [
         "step by which bond order is changed",
         "altered pair of nodes",
         "resonance structure",
