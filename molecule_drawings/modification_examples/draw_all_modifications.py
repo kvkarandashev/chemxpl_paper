@@ -6,7 +6,6 @@ from bmapqml.chemxpl.rdkit_draw_utils import (
     LIGHTRED,
 )
 from bmapqml.utils import mkdir
-import numpy as np
 import os
 
 chemgraph_strings = [
@@ -15,6 +14,7 @@ chemgraph_strings = [
     "6#3@1:15#1@2:6#3",
     "6#3@1:15@2@3:6#3:9",
     "6#3@1:6#1@2@3:6#3:6#3",
+    "9@4:16@2@3:6@4:6#1@4:6",
 ]
 
 kwargs = {
@@ -48,13 +48,19 @@ for rotate_label in rotation.keys():
 
         file_prefix = "test_mod_cg_" + str(str_id) + "_"
 
+        if str_id == 5:
+            centreMoleculesBeforeDrawing=True
+            padding=0.1
+        else:
+            centreMoleculesBeforeDrawing=False
+            padding=None
         size = (300, 200)
 
         if rotate_label == "rotated":
             size = size[::-1]
 
         draw_all_modification_possibilities(
-            cg, file_prefix, size=size, rotate=rotation[rotate_label], **kwargs
+            cg, file_prefix, size=size, rotate=rotation[rotate_label], centreMoleculesBeforeDrawing=centreMoleculesBeforeDrawing, padding=padding, **kwargs
         )
 
         os.chdir("..")
