@@ -1,0 +1,43 @@
+#!/bin/bash
+
+fontsize=11
+dl=2
+
+tab_latex=$1
+final_latex=$2
+
+final_latex_full=$final_latex.tex
+
+cat > $final_latex_full << EOF
+\documentclass[preview]{standalone}%
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{placeins}
+\usepackage{tabularx,multirow}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\newcommand{\gap}{\Delta \epsilon}
+\usepackage{xcolor}
+\textwidth=16.8cm
+\begin{document}
+
+\fontsize{$fontsize}{$dl}\selectfont
+\begin{figure}[tbp]
+\centering
+EOF
+
+sed "s/llll/cccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
+
+cat >> $final_latex_full << EOF
+\end{figure}
+
+\end{document}
+EOF
+pdflatex $final_latex_full
+
+pdftoppm $final_latex.pdf $final_latex -png
+
+mv $final_latex-1.png $final_latex.png

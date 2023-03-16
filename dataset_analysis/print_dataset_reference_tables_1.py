@@ -4,7 +4,6 @@ from print_dataset_size_table_1 import (
     compliant_egc_list,
 )
 from bmapqml.chemxpl.utils import chemgraph_to_canonical_rdkit
-from bmapqml.utils import mkdir
 import pandas as pd
 
 phantom = "\phantom{\_}"
@@ -25,7 +24,7 @@ class latex_table_format:
     def __init__(self, present_negative=False):
         self.present_negative = present_negative
 
-    def __call__(self, number_in):
+    def __call__(self, number_in, wmath=True):
         if isinstance(number_in, str):
             return number_in
         if isinstance(number_in, int):
@@ -35,7 +34,8 @@ class latex_table_format:
             output = latex_scientific(number_in)
         if self.present_negative and number_in >= 0:
             output = "\phantom{-}" + output
-        output = "$" + output + "$"
+        if wmath:
+            output = "$" + output + "$"
         return output
 
 
@@ -75,6 +75,7 @@ def egc2checked_SMILES(egc):
 def find_extrema(egcs, mean_or_std, quant_name, find_max):
     format_func = latex_table_format(present_negative=True)
     best_val = None
+    best_RMSE = None
     best_SMILES = None
     for egc in egcs:
         ad = egc.additional_data
@@ -86,7 +87,15 @@ def find_extrema(egcs, mean_or_std, quant_name, find_max):
         if better(val, best_val, find_max):
             best_SMILES = egc2checked_SMILES(egc)
             best_val = val
-    return format_func(best_val), "$\phantom{-}$" + best_SMILES
+            if mean_or_std == "mean":
+                best_RMSE = ad["std"][quant_name] * std_RMSE_coeff
+    val_str = format_func(best_val, wmath=False)
+    if mean_or_std == "mean":
+        val_str += " \pm " + latex_table_format(present_negative=False)(
+            best_RMSE, wmath=False
+        )
+    val_str = "$" + val_str + "$"
+    return val_str, "$\phantom{-}$" + best_SMILES
 
 
 hnum_mol = "num. mol."

@@ -4,8 +4,8 @@ from print_dataset_size_table_1 import (
     compliant_egc_list,
 )
 from bmapqml.chemxpl.utils import chemgraph_to_canonical_rdkit
-from bmapqml.utils import mkdir
 import pandas as pd
+import numpy as np
 
 phantom = "\phantom{\_}"
 
@@ -25,7 +25,7 @@ class latex_table_format:
     def __init__(self, present_negative=False):
         self.present_negative = present_negative
 
-    def __call__(self, number_in):
+    def __call__(self, number_in, wmath=True):
         if isinstance(number_in, str):
             return number_in
         if isinstance(number_in, int):
@@ -35,7 +35,8 @@ class latex_table_format:
             output = latex_scientific(number_in)
         if self.present_negative and number_in >= 0:
             output = "\phantom{-}" + output
-        output = "$" + output + "$"
+        if wmath:
+            output = "$" + output + "$"
         return output
 
 
@@ -75,6 +76,7 @@ def egc2checked_SMILES(egc):
 def find_extrema(egcs, mean_or_std, quant_name, find_max):
     format_func = latex_table_format(present_negative=True)
     best_val = None
+    best_RMSE = None
     best_SMILES = None
     for egc in egcs:
         ad = egc.additional_data
@@ -86,7 +88,28 @@ def find_extrema(egcs, mean_or_std, quant_name, find_max):
         if better(val, best_val, find_max):
             best_SMILES = egc2checked_SMILES(egc)
             best_val = val
-    return format_func(best_val), "$\phantom{-}$" + best_SMILES
+            if mean_or_std == "mean":
+                best_RMSE = ad["std"][quant_name] * std_RMSE_coeff
+    val_str = format_func(best_val, wmath=False)
+    if mean_or_std == "mean":
+        val_str += " \pm " + latex_table_format(present_negative=False)(
+            best_RMSE, wmath=False
+        )
+    val_str = "$" + val_str + "$"
+    return val_str, "$\phantom{-}$" + best_SMILES
+
+
+def find_global_std(egcs, quant_name):
+    format_func = latex_table_format(present_negative=True)
+    val_arr = []
+    for egc in egcs:
+        ad = egc.additional_data
+        val = ad["mean"][quant_name]
+        if val is None:
+            continue
+        val_arr.append(val)
+    output = np.std(val_arr)
+    return format_func(output)
 
 
 hnum_mol = "num. mol."
@@ -94,10 +117,12 @@ hmin_dEsolv = "min. $\dEsolv^{\mathrm{conv.}}$, a.u."
 hsmin_dEsolv = "min. $\dEsolv^{\mathrm{conv.}}$ SMILES"
 hmax_RMSE_dEsolv = "max. RMSE($\dEsolv^{\mathrm{conv.}}$), a.u."
 hsmax_RMSE_dEsolv = "max. RMSE($\dEsolv^{\mathrm{conv.}}$) SMILES"
+hSTD_dEsolv = "STD $\dEsolv^{\mathrm{conv.}}$, a.u."
 hmax_dipole = "max. $\dipole^{\mathrm{conv.}}$, a.u."
 hsmax_dipole = "max. $\dipole^{\mathrm{conv.}}$ SMILES"
 hmax_RMSE_dipole = "max. RMSE($\dipole^{\mathrm{conv.}}$), a.u."
 hsmax_RMSE_dipole = "max. RMSE($\dipole^{\mathrm{conv.}}$) SMILES"
+hSTD_dipole = "STD $\dipole^{\mathrm{conv.}}$, a.u."
 hmax_RMSE_gap = "max. RMSE($\gap^{\mathrm{conv.}}$), a.u."
 hsmax_RMSE_gap = "max. RMSE($\gap^{\mathrm{conv.}}$) SMILES"
 
@@ -120,6 +145,10 @@ def egc_extrema_dictionnary(relevant_egcs):
     output[hmax_RMSE_gap], output[hsmax_RMSE_gap] = find_extrema(
         relevant_egcs, "std", "HOMO_LUMO_gap", True
     )
+
+    output[hSTD_dEsolv] = find_global_std(relevant_egcs, "solvation_energy")
+    output[hSTD_dipole] = find_global_std(relevant_egcs, "dipole")
+
     return output
 
 
@@ -136,10 +165,12 @@ def main():
         hsmin_dEsolv,
         hmax_RMSE_dEsolv,
         hsmax_RMSE_dEsolv,
+        hSTD_dEsolv,
         hmax_dipole,
         hsmax_dipole,
         hmax_RMSE_dipole,
         hsmax_RMSE_dipole,
+        hSTD_dipole,
         hmax_RMSE_gap,
         hsmax_RMSE_gap,
     ]
