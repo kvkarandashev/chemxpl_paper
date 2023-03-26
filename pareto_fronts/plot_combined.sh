@@ -33,7 +33,7 @@ EOF
 sed -i 's/ \{1,\}/ /g' $tab_latex.tex
 sed -i 's/& delete/ /g' $tab_latex.tex
 
-sed "s/llll/cccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
+sed "s/lllll/ccccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
 
 cat >> $final_latex_full << EOF
 \end{figure}
