@@ -17,6 +17,7 @@ cat > $final_latex_full << EOF
 \usepackage{graphicx}
 \usepackage[english]{babel}
 \usepackage{amsmath}
+\usepackage{booktabs}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \newcommand{\gap}{\Delta \epsilon}
@@ -28,6 +29,9 @@ cat > $final_latex_full << EOF
 \begin{figure}[tbp]
 \centering
 EOF
+
+sed -i 's/ \{1,\}/ /g' $tab_latex.tex
+sed -i 's/& delete/ /g' $tab_latex.tex
 
 sed "s/llll/cccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
 
