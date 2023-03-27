@@ -22,6 +22,8 @@ def rotated_label(label, right=False):
     )
     if right:
         output = "\multicolumn{1}{c|}{" + output + "}"
+    #    else:
+    #        output+=" \hspace{-12ex}"
     return output
 
 
@@ -41,7 +43,7 @@ def pareto_plot_for(dataset, quantity, gap_constraint, bias):
 
 def included_pareto_plot(dataset, quantity, gap_constraint, bias, left=False):
     inline = (
-        "\includegraphics[width=0.275\linewidth]{"
+        "\hspace{-2.0ex}\includegraphics[width=0.275\linewidth]{"
         + pareto_plot_for(dataset, quantity, gap_constraint, bias)
         + "}"
     )
@@ -65,7 +67,7 @@ def legend_multcol():
 
 def pareto_plot_table(dataset, quantity):
     if quantity == "dipole":
-        axis_label = "$D/\mathrm{max}(D^{" + dataset + "})$"
+        axis_label = "$D/\mathrm{max}(D^{\mathrm{" + dataset + "}})$"
     else:
         axis_label = (
             "$\Delta G_{\mathrm{solv.}}/\mathrm{max}(|\Delta G_{\mathrm{solv.}}^{\mathrm{"
@@ -79,9 +81,7 @@ def pareto_plot_table(dataset, quantity):
     for gap_constraint in gap_constraints:
         lcols = rotated_label(gap_constr_name[gap_constraint], right=True)
         lcols1 = rotated_label(
-            "$\Delta \epsilon/\mathrm{max}(\Delta\epsilon^{\mathrm{"
-            + dataset
-            + "}})$ \\vspace{-6.0ex}"
+            "$\Delta \epsilon/\mathrm{max}(\Delta\epsilon^{\mathrm{" + dataset + "}})$"
         )
         lcol.append(lcols)
         lcol1.append(lcols1)
@@ -90,11 +90,7 @@ def pareto_plot_table(dataset, quantity):
     for _ in range(2):
         lcol.append(phantom_label)
         lcol1.append(phantom_label)
-    #    lcol[0]="\cmidrule{3-4}\morecmidrules\cmidrule{3-4}"+lcol[0]
-    #    lcol[0]="\cline{3-4}"+lcol[0]
-    #    table = {
-    #        "\cmidrule(lr){2-3}"+phantom_label: lrow
-    #    }
+    #    lcol[0]="\cline{3-5}"+lcol[0]
     table = {phantom_label: lcol, "\phantom{1}": lcol1}
     for i, bias in enumerate(biases):
         h = bias_names[bias]
