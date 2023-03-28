@@ -46,5 +46,6 @@ pdftoppm $final_latex.pdf $final_latex -png
 
 mv $final_latex-1.png $final_latex.png
 
-#png_cut $final_latex.png cropped_$final_latex.png "0.03:0.03:0:0.02" 
-convert $final_latex.png -trim $final_latex.png
+#png_cut $final_latex.png cropped_$final_latex.png "0.03:0.03:0:0.02"
+#-sharpen 0x1.0
+convert -density 250 $final_latex.png -trim -quality 100 $final_latex.png

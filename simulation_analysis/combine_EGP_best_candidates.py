@@ -13,7 +13,11 @@ class PhantomId:
 
 biases = ["none", "weak", "stronger"]
 
-bias_names = {"none": "no bias", "weak": "weak bias", "stronger": "stronger bias"}
+bias_names = {
+    "none": "$\\alpha_{b}=0.0$",
+    "weak": "$\\alpha_{b}=0.2$",
+    "stronger": "$\\alpha_{b}=0.4$",
+}
 
 gap_constraints = ["weak", "strong"]
 
@@ -76,7 +80,12 @@ def best_candidate_table(ref_folder):
                 new_str = included_best_plot(ref_folder, quantity, gap_constraint, bias)
                 max_colwidth = max(max_colwidth, len(new_str))
                 new_row.append(new_str)
-            table[(opt_prob_name[quantity], gap_constr_name[gap_constraint])] = new_row
+            table[
+                (
+                    "$\\vphantom{\prod_{i=1}^{2}}$" + opt_prob_name[quantity],
+                    "$\\vphantom{\prod_{i=1}^{2}}$" + gap_constr_name[gap_constraint],
+                )
+            ] = new_row
     return table, max_colwidth
 
 
