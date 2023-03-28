@@ -17,6 +17,7 @@ cat > $final_latex_full << EOF
 \usepackage{graphicx}
 \usepackage[english]{babel}
 \usepackage{amsmath}
+\usepackage{booktabs}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \newcommand{\gap}{\Delta \epsilon}
@@ -29,7 +30,10 @@ cat > $final_latex_full << EOF
 \centering
 EOF
 
-sed "s/llll/cccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
+sed -i 's/ \{1,\}/ /g' $tab_latex.tex
+sed -i 's/& delete/ /g' $tab_latex.tex
+
+sed "s/lllll/ccccc/g" $tab_latex.tex | grep -v "rule"  >> $final_latex_full
 
 cat >> $final_latex_full << EOF
 \end{figure}
@@ -41,3 +45,6 @@ pdflatex $final_latex_full
 pdftoppm $final_latex.pdf $final_latex -png
 
 mv $final_latex-1.png $final_latex.png
+
+#png_cut $final_latex.png cropped_$final_latex.png "0.03:0.03:0:0.02" 
+convert $final_latex.png -trim $final_latex.png
