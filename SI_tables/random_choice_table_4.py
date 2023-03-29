@@ -24,12 +24,12 @@ choice_order = {
     "change valence / add heavy atoms (\elementarychange{5}a)": [
         "element of the added nodes",
         "node to which the created nodes will be connected via covalent bonds",
-        "order of the new covalent bonds",
+        "order of the new covalent bonds (also automatically defines the number of added nodes)",
     ],
     "change valence / remove heavy atoms (\elementarychange{5}b)": [
         "removed nodes element",
         "node whose neighbors will be removed",
-        "order of covalent bonds connecting removed nodes to the molecule",
+        "order of covalent bonds connecting removed nodes to the molecule (also automatically defines the number of removed nodes)",
     ],
     "change valence / change bond order (\elementarychange{6})": [
         "step by which bond order is changed",
@@ -71,7 +71,7 @@ def inenum(s, empty_label=False):
     return begenum(empty_label=empty_label) + s + endenum
 
 
-headers = ["Procedure", "Choice order"]
+headers = ["Elementary change", "Choice order"]
 
 for i, h in enumerate(headers):
     output.write(inenum("\item[]" + " " + h + " ", empty_label=(i == 0)) + " ")
