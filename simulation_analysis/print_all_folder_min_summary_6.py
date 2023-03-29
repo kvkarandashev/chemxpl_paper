@@ -446,7 +446,7 @@ def multrow(s, nrows, add_cline=None):
 
 
 runner_up_headers = []
-for i, h in enumerate(["molecule", "SMILES", "quant. est."]):
+for i, h in enumerate(["molecule", "SMILES", "$\phantom{-(}$quant. est."]):
     if i == 0:
         add_cline = "4-6"
     else:
@@ -528,7 +528,11 @@ for SMILES in ordered:
         checked_SMILES,
         cur_enc_data.latex_val(phantom_minus_alignment=True),
     ]
-    new_row1 = [LaTeX_label(cur_id, is_best), checked_SMILES, cur_enc_data.latex_val()]
+    new_row1 = [
+        LaTeX_label(cur_id, is_best),
+        checked_SMILES,
+        cur_enc_data.latex_val(phantom_minus_alignment=True),
+    ]
 
     for bias in biases:
         new_row.append(cur_enc_data.dict[bias])
@@ -551,7 +555,7 @@ with pd.option_context("max_colwidth", max_colwidth):
         latex_opt = latex_quantity_name[opt_prob.quant] + "^{\\mathrm{conv.}}"
         #        if opt_prob.quant == "solvation_energy":
         #            latex_opt = "\phantom{-}" + latex_opt
-        cur_runner_up_table[2] = multrow("$" + latex_opt + "$", 2)
+        cur_runner_up_table[2] = multrow("$\phantom{-(}" + latex_opt + "$", 2)
         table_to_latex(
             tab,
             cur_runner_up_table,
