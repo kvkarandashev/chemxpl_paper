@@ -446,7 +446,7 @@ def multrow(s, nrows, add_cline=None):
 
 
 runner_up_headers = []
-for i, h in enumerate(["molecule", "SMILES", "$\phantom{-(}$quant. est."]):
+for i, h in enumerate(["molecule", "SMILES", "$\phantom{-(}$opt. quant."]):
     if i == 0:
         add_cline = "4-6"
     else:
