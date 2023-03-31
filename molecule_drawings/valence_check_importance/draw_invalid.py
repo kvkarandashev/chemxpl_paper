@@ -4,8 +4,8 @@ from bmapqml.utils import mkdir
 from bmapqml.chemxpl.rdkit_draw_utils import (
     draw_all_modification_possibilities,
     draw_chemgraph_to_file,
-    LIGHTRED,
     LIGHTBLUE,
+    LIGHTGREEN,
 )
 
 chemgraph_str = "7#1@1:15#1@2:7#1"
@@ -28,7 +28,7 @@ for image in ["pre_move", "post_move"]:
         highlightAtoms=where_add,
         highlightAtomColor=LIGHTBLUE,
         highlightBondTuples=highlightBondTuples[image],
-        highlightBondTupleColor=LIGHTRED,
+        highlightBondTupleColor=LIGHTGREEN,
         highlightAtomRadius=0.4,
         post_added_bonds=post_added_bonds[image],
     )
@@ -42,7 +42,7 @@ draw_chemgraph_to_file(
     highlightAtoms=where_add,
     highlightAtomColor=LIGHTBLUE,
     highlightBondTuples=highlightBondTuples["post_move"],
-    highlightBondTupleColor=LIGHTRED,
+    highlightBondTupleColor=LIGHTGREEN,
     highlightAtomRadius=0.4,
 )
 
@@ -60,8 +60,8 @@ draw_all_modification_possibilities(
     "pos_",
     dump_directory=mod_pos_subdir,
     randomized_change_params=randomized_change_parameters,
-    color_change=LIGHTRED,
-    color_change_neighbors=LIGHTBLUE,
+    color_change_special=LIGHTGREEN,
+    color_change_minor=LIGHTBLUE,
     size=size,
     rotate=rotate,
 )

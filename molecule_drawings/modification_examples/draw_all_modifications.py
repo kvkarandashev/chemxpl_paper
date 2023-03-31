@@ -4,6 +4,7 @@ from bmapqml.chemxpl.rdkit_draw_utils import (
     full_change_list,
     LIGHTBLUE,
     LIGHTRED,
+    LIGHTGREEN,
 )
 from bmapqml.utils import mkdir
 import os
@@ -19,8 +20,9 @@ chemgraph_strings = [
 
 kwargs = {
     "highlightAtomRadius": 0.4,
-    "color_change": LIGHTRED,
-    "color_change_neighbors": LIGHTBLUE,
+    "color_change_main": LIGHTRED,
+    "color_change_minor": LIGHTBLUE,
+    "color_change_special": LIGHTGREEN,
     "randomized_change_params": {
         "change_prob_dict": full_change_list,
         "possible_elements": ["B", "C", "O"],
@@ -49,18 +51,24 @@ for rotate_label in rotation.keys():
         file_prefix = "test_mod_cg_" + str(str_id) + "_"
 
         if str_id == 5:
-            centreMoleculesBeforeDrawing=True
-            padding=0.1
+            centreMoleculesBeforeDrawing = True
+            padding = 0.1
         else:
-            centreMoleculesBeforeDrawing=False
-            padding=None
+            centreMoleculesBeforeDrawing = False
+            padding = None
         size = (300, 200)
 
         if rotate_label == "rotated":
             size = size[::-1]
 
         draw_all_modification_possibilities(
-            cg, file_prefix, size=size, rotate=rotation[rotate_label], centreMoleculesBeforeDrawing=centreMoleculesBeforeDrawing, padding=padding, **kwargs
+            cg,
+            file_prefix,
+            size=size,
+            rotate=rotation[rotate_label],
+            centreMoleculesBeforeDrawing=centreMoleculesBeforeDrawing,
+            padding=padding,
+            **kwargs
         )
 
         os.chdir("..")
