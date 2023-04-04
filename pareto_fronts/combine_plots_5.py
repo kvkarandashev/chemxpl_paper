@@ -54,15 +54,19 @@ def pareto_plot_for(dataset, quantity, gap_constraint, bias):
 
 
 def yaxis_label(dataset):
-    return "$\Delta \epsilon/\mathrm{max}(\Delta\epsilon^{\mathrm{" + dataset + "}})$"
+    return (
+        "$\Delta \epsilon^{\mathrm{cheap}}/\mathrm{max}(\Delta\epsilon^{\mathrm{"
+        + dataset
+        + "}})$"
+    )
 
 
 def xaxis_label(dataset, quantity):
     if quantity == "dipole":
-        return "$D/\mathrm{max}(D^{\mathrm{" + dataset + "}})$"
+        return "$D^{\mathrm{cheap}}/\mathrm{max}(D^{\mathrm{" + dataset + "}})$"
     else:
         return (
-            "$\Delta G_{\mathrm{solv.}}/\mathrm{max}(|\Delta G_{\mathrm{solv.}}^{\mathrm{"
+            "$\Delta G_{\mathrm{solv.}}^{\mathrm{cheap}}/\mathrm{max}(|\Delta G_{\mathrm{solv.}}^{\mathrm{"
             + dataset
             + "}}|)$"
         )

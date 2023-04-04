@@ -385,7 +385,7 @@ for quantity in quantities:
         fin_res_label = latex_quantity_name[quantity] + "^{\mathrm{best}}"
         latex_headers = [
             "$\\biasprop$",
-            None,
+            best[quantity] + " $" + fin_res_label + "$, a.u.",
             None,
             None,
             "$\overline{" + fin_res_label + "}$, a.u.",
@@ -462,8 +462,10 @@ def multrow(s, nrows, add_cline=None):
     return tuple(["\multirow{" + str(nrows) + "}{*}{" + s + "}"] + phantoms)
 
 
+candidate_headers_no_multrow = ["molecule", "SMILES", "$\phantom{-(}$opt. quant."]
+
 candidate_headers = []
-for i, h in enumerate(["molecule", "SMILES", "$\phantom{-(}$opt. quant."]):
+for i, h in enumerate(candidate_headers_no_multrow):
     if i == 0:
         add_cline = "4-6"
     else:
@@ -617,6 +619,18 @@ with pd.option_context("max_colwidth", max_colwidth):
         multicolumn=True,
         multirow=True,
     )
+
+    minmax_candidate_cut_table = [row[:-3] for row in minmax_candidate_table]
+
+    table_to_latex(
+        minmax_candidate_cut_table,
+        candidate_headers_no_multrow,
+        dataset_name + "_minmax_candidate_cut_table.tex",
+        transpose=False,
+        multicolumn=True,
+        multirow=True,
+    )
+
     for opt_prob, tab in individual_candidate_tables.items():
         cur_candidate_table = deepcopy(all_candidate_headers)
         latex_opt = latex_quantity_name[opt_prob.quant]  # + "^{\\mathrm{conv.}}"
@@ -642,4 +656,18 @@ subprocess.run(
 )
 subprocess.run(
     ["../../final_summary_postproc.sh", dataset_name + "_minmax_candidate_table.tex"]
+)
+subprocess.run(
+    [
+        "../../final_summary_postproc.sh",
+        dataset_name + "_minmax_candidate_cut_table.tex",
+    ]
+)
+subprocess.run(
+    [
+        "sed",
+        "-i",
+        "s/\\multicolumn{6}/\\multicolumn{3}/g",
+        dataset_name + "_minmax_candidate_cut_table.tex",
+    ]
 )
