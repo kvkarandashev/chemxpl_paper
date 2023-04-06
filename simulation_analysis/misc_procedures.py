@@ -1,5 +1,6 @@
 import glob, os
 import numpy as np
+import subprocess
 
 
 def all_xyz_vals(xyz_file):
@@ -189,6 +190,29 @@ max_ref_std = {
     },
 }
 
+quant_STD = {
+    "QM9": {
+        "weak": {
+            "dipole": 0.7202490150375122,
+            "solvation_energy": 0.003800219983701787,
+        },
+        "strong": {
+            "dipole": 0.5330517652144172,
+            "solvation_energy": 0.0027043460958190825,
+        },
+    },
+    "EGP": {
+        "weak": {
+            "dipole": 0.740092558470457,
+            "solvation_energy": 0.0035497259204171077,
+        },
+        "strong": {
+            "dipole": 0.5868571986460336,
+            "solvation_energy": 0.003148923583866458,
+        },
+    },
+}
+
 # Both QM9 and EGP have methane as the compound with the largest gap.
 best_gap_val = 0.6193166670127856
 
@@ -373,3 +397,24 @@ def table_to_latex(
     )
 
     df.to_latex(filename, index=False, escape=False, **to_latex_kwargs)
+
+
+def brute_table_write(table_in, filename, del_str=None):
+    max_colwidth = 0
+    for k, l in table_in.items():
+        max_colwidth = max(max_colwidth, len(k))
+        for s in l:
+            max_colwidth = max(max_colwidth, len(s))
+    df = pd.DataFrame(table_in, columns=table_in.keys())
+    with pd.option_context("max_colwidth", max_colwidth):
+        df.to_latex(
+            filename,
+            index=False,
+            escape=False,
+            multicolumn=True,
+            multicolumn_format="c",
+            multirow=True,
+        )
+    if del_str is not None:
+        subprocess.run(["sed", "-i", "s/&[ ]*" + del_str + "/  /g", filename])
+    subprocess.run(["sed", "-i", "s/\$\\\\phantom{(}/\\\\phantom{(}\$/g", filename])
