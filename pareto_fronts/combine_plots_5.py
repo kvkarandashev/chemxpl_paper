@@ -108,7 +108,9 @@ phantom_label = "\phantom{\_}"
 
 
 def legend():
-    return "\includegraphics[width=0.375\linewidth]{from_Jan/legends/legend.pdf}"
+    return (
+        "\includegraphics[width=0.375\linewidth]{from_Jan/legends/legend_vertical.png}"
+    )
 
 
 def pareto_plot_table(dataset, quantity, gap_constraint):

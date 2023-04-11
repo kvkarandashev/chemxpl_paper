@@ -378,6 +378,10 @@ for quantity in quantities:
             min_data_dir = None
             min_val = None
             min_val_RMSE = None
+
+            worst_val = None
+            worst_val_RMSE = None
+
             min_SMILES = None
             all_SMILES = []
             max_RMSE = 0.0
@@ -421,6 +425,9 @@ for quantity in quantities:
                     min_val_RMSE = cur_RMSE
                     min_data_dir = data_dir
                     min_SMILES = SMILES
+                if (worst_val is None) or (abs(worst_val) > abs(cur_val)):
+                    worst_val = cur_val
+                    worst_val_RMSE = cur_RMSE
                 if SMILES not in candidate_SMILES:
                     candidate_SMILES[SMILES] = EncDict()
                 candidate_SMILES[SMILES].add(
