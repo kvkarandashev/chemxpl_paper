@@ -145,18 +145,18 @@ def find_global_std(egcs, quant_name):
 
 
 hnum_mol = "num. mol."
-hmin_dEsolv = "min. $\dEsolv^{\mathrm{conv.}}$, a.u."
-hsmin_dEsolv = "min. $\dEsolv^{\mathrm{conv.}}$ SMILES"
-hmax_RMSE_dEsolv = "max. RMSE($\dEsolv^{\mathrm{conv.}}$), a.u."
-hsmax_RMSE_dEsolv = "max. RMSE($\dEsolv^{\mathrm{conv.}}$) SMILES"
-hSTD_dEsolv = "STD $\dEsolv^{\mathrm{conv.}}$, a.u."
-hmax_dipole = "max. $\dipole^{\mathrm{conv.}}$, a.u."
-hsmax_dipole = "max. $\dipole^{\mathrm{conv.}}$ SMILES"
-hmax_RMSE_dipole = "max. RMSE($\dipole^{\mathrm{conv.}}$), a.u."
-hsmax_RMSE_dipole = "max. RMSE($\dipole^{\mathrm{conv.}}$) SMILES"
-hSTD_dipole = "STD $\dipole^{\mathrm{conv.}}$, a.u."
-hmax_RMSE_gap = "max. RMSE($\gap^{\mathrm{conv.}}$), a.u."
-hsmax_RMSE_gap = "max. RMSE($\gap^{\mathrm{conv.}}$) SMILES"
+hmin_dEsolv = "min. $\dEsolv$, a.u."
+hsmin_dEsolv = "min. $\dEsolv$ SMILES"
+hmax_RMSE_dEsolv = "max. RMSE($\dEsolv$), a.u."
+hsmax_RMSE_dEsolv = "max. RMSE($\dEsolv$) SMILES"
+hSTD_dEsolv = "STD $\dEsolv$, a.u."
+hmax_dipole = "max. $\dipole$, a.u."
+hsmax_dipole = "max. $\dipole$ SMILES"
+hmax_RMSE_dipole = "max. RMSE($\dipole$), a.u."
+hsmax_RMSE_dipole = "max. RMSE($\dipole$) SMILES"
+hSTD_dipole = "STD $\dipole$, a.u."
+hmax_RMSE_gap = "max. RMSE($\gap$), a.u."
+hsmax_RMSE_gap = "max. RMSE($\gap$) SMILES"
 
 
 def egc_extrema_dictionnary(relevant_egcs):

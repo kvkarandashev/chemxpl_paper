@@ -173,9 +173,6 @@ def main():
                 "\phantom{0}" for _ in range(len(extrema_headers))
             ]
 
-    for h, c in table.items():
-        print(h, len(c))
-
     df = pd.DataFrame(table)
     df.to_latex(
         "dataset_reference_table.tex", index=False, escape=False, multicolumn=True
