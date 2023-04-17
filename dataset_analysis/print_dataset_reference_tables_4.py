@@ -196,12 +196,19 @@ def main():
     #        "solvation_energy": "$\dEsolv$",
     #        "dipole": "$\dipole$",
     #    }
+
     extrema_headers = [
         hnum_mol,
+        hmin_dEsolv,
+        hsmin_dEsolv,
         hmax_RMSE_dEsolv,
         hsmax_RMSE_dEsolv,
+        hSTD_dEsolv,
+        hmax_dipole,
+        hsmax_dipole,
         hmax_RMSE_dipole,
         hsmax_RMSE_dipole,
+        hSTD_dipole,
         hmax_RMSE_gap,
         hsmax_RMSE_gap,
     ]
@@ -234,12 +241,14 @@ def main():
     # Combining two tables into one.
     QM9_lines = open("dataset_reference_table_QM9.tex", "r").readlines()
     EGP_lines = open("dataset_reference_table_EGP.tex", "r").readlines()
-    top = QM9_lines[:4]
+    bottom_line_id = 4
+    upper_line_id = len(extrema_headers) + bottom_line_id
+    top = QM9_lines[:bottom_line_id]
     QM9_line = dataset_line("QM9")
-    QM9_body = QM9_lines[4:11]
+    QM9_body = QM9_lines[bottom_line_id:upper_line_id]
     EGP_line = dataset_line("EGP")
-    EGP_body = EGP_lines[4:11]
-    bottom = EGP_lines[11:]
+    EGP_body = EGP_lines[bottom_line_id:upper_line_id]
+    bottom = EGP_lines[upper_line_id:]
     big_table = open("dataset_reference_table.tex", "w")
     for l in top + [QM9_line] + QM9_body + [EGP_line] + EGP_body + bottom:
         big_table.write(l)
