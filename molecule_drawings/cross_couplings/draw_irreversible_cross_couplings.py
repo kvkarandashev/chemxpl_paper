@@ -27,6 +27,8 @@ kwargs = {
     "bw_palette": True,
 }
 
+size = (300, 200)
+rotate = None
 
 for i, s in enumerate(SMILES):
     dump_dir = "all_frags_" + str(i)
@@ -34,6 +36,6 @@ for i, s in enumerate(SMILES):
     mkdir(dump_dir)
     os.chdir(dump_dir)
     draw_all_possible_fragment_pairs(
-        cg, size=(200, 300), rotate=90, filename_prefix="fragment_pair_" + str(i) + "_"
+        cg, size=size, rotate=rotate, filename_prefix="fragment_pair_" + str(i) + "_"
     )
     os.chdir("..")

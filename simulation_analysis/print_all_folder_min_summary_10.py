@@ -646,7 +646,7 @@ def from_dataset(enc):
 
 
 def multrow(s, nrows, add_cline=None):
-    phantoms = [phantom for _ in range(nrows - 1)]
+    phantoms = ["\phantom{1}" for _ in range(nrows - 1)]
     if (add_cline is not None) and (nrows > 1):
         phantoms[-1] = "\cline{" + add_cline + "}" + phantoms[-1]
     return tuple(["\multirow{" + str(nrows) + "}{*}{" + s + "}"] + phantoms)
@@ -776,7 +776,7 @@ for i, SMILES in enumerate(ordered):
     if final_molecule:
         minmax_name = "worst"
     if beginning_molecule:
-        minmax_name = "\midrule best"
+        minmax_name = "best"
 
     if beginning_molecule or final_molecule:
         minmax_row = [
@@ -787,10 +787,10 @@ for i, SMILES in enumerate(ordered):
         #        if not (final_molecule and (SMILES == beginning_SMILES)):
         minmax_candidate_table.append(minmax_row)
 
-    if final_molecule:
-        bfdr, bfdr_max_col = best_from_dataset_row(enc_data.opt_prob_label)
-        max_colwidth = max(max_colwidth, bfdr_max_col)
-        candidate_table.append(bfdr)
+#    if final_molecule:
+#        bfdr, bfdr_max_col = best_from_dataset_row(enc_data.opt_prob_label)
+#        max_colwidth = max(max_colwidth, bfdr_max_col)
+#        candidate_table.append(bfdr)
 #        minmax_candidate_table.append(bfdr)
 
 with pd.option_context("max_colwidth", max_colwidth):

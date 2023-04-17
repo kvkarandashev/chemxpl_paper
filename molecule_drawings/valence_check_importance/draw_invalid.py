@@ -15,8 +15,10 @@ where_add = [0, 2]
 post_added_bonds = {"pre_move": None, "post_move": [(*where_add, 1)]}
 highlightBondTuples = {"pre_move": [], "post_move": [tuple(where_add)]}
 
-size = (200, 300)
-rotate = 90
+# size = (200, 300)
+# rotate = 90
+size = (300, 200)
+rotate = None
 
 cg = str2ChemGraph(chemgraph_str)
 for image in ["pre_move", "post_move"]:
