@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export OMP_NUM_THREADS=1,1
+
+python generate_example_SMILES.py /store/konst/chemxpl_related/minimization_runs_xTB_dipole_solvation_cheap/xTB_dipsolv_opt_cheap_3_none_weak_solvation_energy/data_xTB_dipsolv_opt_cheap_3_none_weak_solvation_energy_1/restart_file_1.pkl

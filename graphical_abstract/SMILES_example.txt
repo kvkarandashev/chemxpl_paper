@@ -1,0 +1,15 @@
+0
+C
+B
+CC
+C=C
+1
+C1CC1
+N#C
+CCC#C
+CNCC
+2
+SC#N
+COC
+C=COC=C
+FCCF
