@@ -3,7 +3,6 @@ from print_dataset_size_table_1 import (
     ref_dataset_egcs,
     compliant_egc_list,
 )
-import subprocess
 from bmapqml.chemxpl.utils import chemgraph_to_canonical_rdkit
 import pandas as pd
 import numpy as np
@@ -186,7 +185,11 @@ def egc_extrema_dictionnary(relevant_egcs):
 
 
 def dataset_line(name):
-    return "\midrule\multicolumn{3}{c}{" + name + " dataset}\\\\\midrule"
+    if name == "QM9":
+        midrule_str = ""
+    else:
+        midrule_str = "\midrule"
+    return midrule_str + "\multicolumn{3}{c}{" + name + " dataset}\\\\\midrule"
 
 
 def main():

@@ -44,7 +44,7 @@ def yaxis_label(dataset):
 
 def xaxis_label(dataset, quantity):
     if quantity == "dipole":
-        return "$D/\mathrm{max}^{\mathrm{cheap}}(D^{\mathrm{" + dataset + "}})$"
+        return "$D^{\mathrm{cheap}}/\mathrm{max}(D^{\mathrm{" + dataset + "}})$"
     else:
         return (
             "$\Delta G_{\mathrm{solv.}}^{\mathrm{cheap}}/\mathrm{max}(|\Delta G_{\mathrm{solv.}}^{\mathrm{"

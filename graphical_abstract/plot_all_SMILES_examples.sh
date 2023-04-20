@@ -2,7 +2,7 @@
 
 cd example_SMILES
 
-version=2
+version=3
 
 for s in *.txt
 do

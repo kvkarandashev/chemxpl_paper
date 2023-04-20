@@ -161,10 +161,19 @@ class OptProbLabel:
     def STD(self):
         return quant_STD[dataset_name][self.gap_constr][self.quant]
 
-    def opt_name_row(self):
-        return ["\\midrule\multicolumn{6}{c}{" + self.tex_label() + "}"] + [
-            phantom for _ in range(5)
-        ]
+    def opt_name_row(self, ncols):
+        if self.quant == "solvation_energy" and self.gap_constr == "weak":
+            midrule_str = ""
+        else:
+            midrule_str = "\\midrule"
+        return [
+            midrule_str
+            + "\multicolumn{"
+            + str(ncols)
+            + "}{c}{"
+            + self.tex_label()
+            + "}"
+        ] + [phantom for _ in range(ncols - 1)]
 
 
 def better(val1, val2, quantity):
@@ -338,8 +347,17 @@ del_str = "delete"
 
 for quantity in quantities:
     step_comp_table[dphantom].append(del_str)
+
+    if quantity == "solvation_energy":
+        midrule_str_step_comp = ""
+    else:
+        midrule_str_step_comp = "\midrule"
+
     step_comp_table[step_comp_angle_header].append(
-        "\midrule\multicolumn{8}{c}{" + opt_prob_quant_str(quantity) + "}"
+        midrule_str_step_comp
+        + "\multicolumn{8}{c}{"
+        + opt_prob_quant_str(quantity)
+        + "}"
     )
     for f in step_comp_fields:
         step_comp_table[step_comp_angle_header].append(f)
@@ -352,8 +370,15 @@ for quantity in quantities:
             opt_prob_id
         )
 
+        if quantity == "solvation_energy" and gap_constraint == "weak":
+            minimized_averages_table_midrule_str = ""
+        else:
+            minimized_averages_table_midrule_str = "\midrule"
         minimized_averages_table["$\\biasprop$"].append(
-            "\midrule\multicolumn{4}{c}{" + opt_prob_id + "}"
+            minimized_averages_table_midrule_str
+            + "\multicolumn{4}{c}{"
+            + opt_prob_id
+            + "}"
         )
 
         for b in biases:
@@ -745,7 +770,7 @@ for i, SMILES in enumerate(ordered):
 
     if enc_data.opt_prob_label != cur_opt_prob:
         cur_opt_prob = enc_data.opt_prob_label
-        extra_row = cur_opt_prob.opt_name_row()
+        extra_row = cur_opt_prob.opt_name_row(6)
         max_colwidth = max(max_colwidth, len(extra_row[0]))
         candidate_table.append(extra_row)
         minmax_candidate_table.append(extra_row)
