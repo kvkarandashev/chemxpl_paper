@@ -14,11 +14,11 @@ choice_order = {
         "resonance structure",
     ],
     "replace heavy atom (\elementarychange{3})": [
-        "created node's heavy atom element",
+        "node's new heavy atom element",
         "changed node",
     ],
     "change valence / change hydrogen number (\elementarychange{4})": [
-        "node whose valence is to be changed",
+        "node whose valence is changed",
         "new number of hydrogens connected to the node",
     ],
     "change valence / add heavy atoms (\elementarychange{5}a)": [
