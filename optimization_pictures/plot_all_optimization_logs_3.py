@@ -211,6 +211,17 @@ xtick_position_powers = [0, 2, 4]
 xtick_positions = [10.0**p for p in xtick_position_powers]
 xtick_labels = [r"$10^{" + str(p) + "}$" for p in xtick_position_powers]
 
+display_xtick_labels = {
+    QM9: {
+        "weak": {solv_en: True, dipole: False},
+        "strong": {solv_en: False, dipole: True},
+    },
+    EGP: {
+        "weak": {solv_en: True, dipole: False},
+        "strong": {solv_en: False, dipole: True},
+    },
+}
+
 num_minor_ticks = 2
 
 left_indent = 0.25
@@ -229,7 +240,6 @@ position = [
 # For the legend.
 bias_coeff_symbol = "\\alpha_{b}"
 bias_true_val = {"none": 0.0, "weak": 0.2, "stronger": 0.4}
-legend_ncol = 2
 
 
 def line2step_quant_SMILES(line):
@@ -374,6 +384,7 @@ def plot_opt_log_filenames(
     cur_best_ref_val,
     cur_val_STD_coeff,
     output_filename,
+    cur_display_xtick_labels=True,
 ):
     fig = plt.figure(constrained_layout=True)
     ax = fig.add_subplot()
@@ -454,7 +465,11 @@ def plot_opt_log_filenames(
     )
 
     ax.set_xticks(xtick_positions)
-    ax.set_xticklabels(xtick_labels, fontsize=ticks_fontsize)
+    if cur_display_xtick_labels:
+        true_xtick_labels = xtick_labels
+    else:
+        true_xtick_labels = ["" for _ in xtick_labels]
+    ax.set_xticklabels(true_xtick_labels, fontsize=ticks_fontsize)
     ax.yaxis.set_minor_locator(
         MultipleLocator(ytick_positions_tuple[2] / float(num_minor_ticks))
     )
@@ -520,11 +535,14 @@ def plot_opt_log_diff_bias(
         cur_best_ref_val,
         cur_val_STD_coeff,
         figure_file,
+        cur_display_xtick_labels=display_xtick_labels[dataset][gap_constraint][
+            quantity_name
+        ],
     )
 
 
-def plot_legend(output_dir):
-    output_filename = output_dir + "/legend.png"
+def plot_legend(output_dir, ncol):
+    output_filename = output_dir + "/legend_" + str(ncol) + ".png"
     fig = plt.figure(constrained_layout=True)
     fig.set_figwidth(fig_width * 0.75)
     fig.set_figheight(fig_height * 0.75)
@@ -547,13 +565,20 @@ def plot_legend(output_dir):
         handles,
         labels,
         numpoints=1,
-        ncol=legend_ncol,
+        ncol=ncol,
         fontsize=legend_fontsize * 0.6,
         frameon=False,
         handlelength=2.0,
     )
     fig.savefig(output_filename)
-    run(["convert", output_filename, "-trim", output_dir + "/trimmed_legend.png"])
+    run(
+        [
+            "convert",
+            output_filename,
+            "-trim",
+            output_dir + "/trimmed_legend_" + str(ncol) + ".png",
+        ]
+    )
 
 
 def main():
@@ -564,7 +589,8 @@ def main():
                 plot_opt_log_diff_bias(
                     data_dir, dataset, quantity_name, gap_constraint, output_dir
                 )
-    plot_legend(output_dir)
+    for ncol in [1, 2]:
+        plot_legend(output_dir, ncol)
 
 
 if __name__ == "__main__":
