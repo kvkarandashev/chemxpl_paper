@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from glob import glob
 from subprocess import run
 import numpy as np
+from matplotlib.ticker import MultipleLocator
 
 bias_values = ["none", "weak", "stronger"]
 
@@ -40,24 +41,118 @@ legend_fontsize = 40.0
 ticks_fontsize = 32.0
 
 leftover_mult_x = 2.0
-leftover_mult_y = 0.14
+leftover_mult_y = 0.05
+
+fig_width = 8.0
+fig_height = 6.0
 
 bias_linestyle = {"none": "dotted", "weak": "dashdot", "stronger": "dashed"}
+
+init_val_linestyle = "dashed"
+init_val_color = "black"
 
 negligible_step_float = 1.0e-5
 plotted_averages_number = 16
 
-xtick_labels = {
-    0.2: r"$2\times10^{-1}$",
-    0.4: r"$4\times10^{-1}$",
-    0.3: r"$3\times10^{-1}$",
-    0.6: r"$6\times10^{-1}$",
-    0.8: r"$8\times10^{-1}$",
-    0.05: r"$5\times10^{-2}$",
+# Quantities for relative improvement calculation.
+best_ref_vals = {
+    "QM9": {
+        "weak": {
+            "dipole": (
+                5.2624256900482225,
+                8.190772053238254e-05,
+                "8@7:7#2@8:7@5@6@8:7@6@7:7@7@8:6#3:6#1:6:6",
+            ),
+            "solvation_energy": (
+                -0.036118152765830525,
+                9.940944965402545e-05,
+                "8@6:7#2@7:7#2@8:7#1@7@8:7@6@7:7@6@8:6:6:6",
+            ),
+            "atomization_energy": (
+                -5.489771247476437,
+                4.704659650874689e-05,
+                "6#3@7:6#3@7:6#3@8:6#3@8:6#3@8:6#2@6@7:6#2@8:6#1:6",
+            ),
+        },
+        "strong": {
+            "dipole": (
+                3.3568648712900764,
+                0.06473921973977188,
+                "8@7:8@8:7#1@7@8:7#1@5@7:7#1@6@8:6#2@6:6#2:6:6",
+            ),
+            "solvation_energy": (
+                -0.021467490751841414,
+                0.0005614388897913243,
+                "8@7:8@8:7#2@7:7#2@8:7#1@5@7:6#2@6:6#2@8:6:6",
+            ),
+            "atomization_energy": (
+                -5.489771247476437,
+                4.704659650874689e-05,
+                "6#3@7:6#3@7:6#3@8:6#3@8:6#3@8:6#2@6@7:6#2@8:6#1:6",
+            ),
+        },
+    },
+    "EGP": {
+        "weak": {
+            "dipole": (
+                5.217191799780868,
+                0.0022688571698954913,
+                "8@6:7#2@7:7#2@8:7#1@7@8:7@6@7:7@6@8:6:6:6",
+            ),
+            "solvation_energy": (
+                -0.03608624382949954,
+                8.482093682841212e-05,
+                "8@6:7#2@7:7#2@8:7#1@7@8:7@6@7:7@6@8:6:6:6",
+            ),
+            "atomization_energy": (
+                -8.130926853176323,
+                0.0015182550242717613,
+                "6#3@8:6#3@8:6#3@9:6#3@9:6#3@10:6#3@10:6#3@11:6#3@11:6#1@12:6#1@12:6#1@13:6#1@13:6@13:6",
+            ),
+        },
+        "strong": {
+            "dipole": (
+                3.1670498606166886,
+                0.07476372139614328,
+                "16@2@4@5@8:16@3@6@7@9:9:9:8:8:8:8:6#2@9:6#2",
+            ),
+            "solvation_energy": (
+                -0.02976335641089712,
+                0.0002888209390425601,
+                "16@2@3@6@11:16@4@5@7@12:8:8:8:8:7#2:7#2:6#2@10@11:6#2@10@12:6#2:6#2:6#2",
+            ),
+            "atomization_energy": (
+                -8.065834964640352,
+                0.0007362348666310831,
+                "7#2@12:7#2@13:6#2@4@12:6#2@5@13:6#2@6:6#2@7:6#2@8:6#2@9:6#2@10:6#2@11:6#2@11:6#2:6#2:6#2",
+            ),
+        },
+    },
 }
 
-for i in range(-1, 8):
-    xtick_labels[10.0**i] = r"$10^{" + str(i) + "}$"
+
+quant_STD = {
+    "QM9": {
+        "weak": {
+            "dipole": 0.7202490150375122,
+            "solvation_energy": 0.003800219983701787,
+        },
+        "strong": {
+            "dipole": 0.5330517652144172,
+            "solvation_energy": 0.0027043460958190825,
+        },
+    },
+    "EGP": {
+        "weak": {
+            "dipole": 0.740092558470457,
+            "solvation_energy": 0.0035497259204171077,
+        },
+        "strong": {
+            "dipole": 0.5868571986460336,
+            "solvation_energy": 0.003148923583866458,
+        },
+    },
+}
 
 
 def latex_scientific(number_in, nfigures=0):
@@ -78,29 +173,32 @@ class latex_format:
 
     def __call__(self, number_in):
         if not self.scientific:
-            return str(int(number_in))
+            if self.nfigures == 0:
+                return str(int(number_in))
+            else:
+                return "{:1.1f}".format(number_in)
         if number_in == 0.0:
-            return "0.0"
+            return "0"
         output = latex_scientific(number_in, nfigures=self.nfigures)
         output = r"$" + output + "$"
         return output
 
 
-ytick_positions = {
+ytick_positions_tuples = {
     QM9: {
-        solv_en: [1e-2, 0.0, -1e-2, -2e-2, -3e-2, -4e-2],
-        dipole: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        "weak": {solv_en: (-100.0, 20.0, 2.0), dipole: (-100.0, 20.0, 2.0)},
+        "strong": {solv_en: (-100.0, 20.0, 2.0), dipole: (-100.0, 20.0, 2.0)},
     },
     EGP: {
-        solv_en: [-0.0, -1.0e-1, -2.0e-1, -3.0e-1, -4.0e-1, -5.0e-1],
-        dipole: list(range(0, 50, 10)),
+        "weak": {solv_en: (-20.0, 140.0, 20.0), dipole: (-20.0, 140.0, 10.0)},
+        "strong": {solv_en: (-10.0, 140.0, 10.0), dipole: (-20.0, 140.0, 10.0)},
     },
 }
 
 ytick_label_format = {
     QM9: {
-        solv_en: {"scientific": True, "nfigures": 0},
-        dipole: {"scientific": False, "nfigures": 0},
+        solv_en: {"scientific": True, "nfigures": 1},
+        dipole: {"scientific": False, "nfigures": 1},
     },
     EGP: {
         solv_en: {"scientific": True, "nfigures": 0},
@@ -109,9 +207,11 @@ ytick_label_format = {
 }
 
 # xtick_positions=[1.0, 1.e+1, 1.e+2, 1.e+3, 1.e+4, 1.e+5]
-xtick_positions = [1.0, 1.0e2, 1.0e4]
+xtick_position_powers = [0, 2, 4]
+xtick_positions = [10.0**p for p in xtick_position_powers]
+xtick_labels = [r"$10^{" + str(p) + "}$" for p in xtick_position_powers]
 
-xtick_labels = [xtick_labels[xtick_pos] for xtick_pos in xtick_positions]
+num_minor_ticks = 2
 
 left_indent = 0.25
 bottom_indent = 0.1
@@ -125,6 +225,11 @@ position = [
     1.0 - right_indent - left_indent,
     1.0 - top_indent - bottom_indent,
 ]
+
+# For the legend.
+bias_coeff_symbol = "\\alpha_{b}"
+bias_true_val = {"none": 0.0, "weak": 0.2, "stronger": 0.4}
+legend_ncol = 2
 
 
 def line2step_quant_SMILES(line):
@@ -153,6 +258,29 @@ def log_spaced_values(lines):
         points_x.append(step_val)
         points_y.append(cur_val)
     return points_x, points_y
+
+
+def plot_found_initial_value(ax, xlim, init_improvement, **add_plot_kwargs):
+    ax.plot(
+        list(xlim),
+        [init_improvement for _ in xlim],
+        linestyle=init_val_linestyle,
+        linewidth=linewidth,
+        color=init_val_color,
+        **add_plot_kwargs
+    )
+
+
+def plot_initial_value(
+    ax, input_filename, best_val_ref, STD_val_coeff, **add_plot_kwargs
+):
+    input = open(input_filename, "r")
+    first_line = input.readline()
+    input.close()
+    _, init_val, _ = line2step_quant_SMILES(first_line)
+    init_improvement = (init_val - best_val_ref) / STD_val_coeff
+    xlim = ax.get_xlim()
+    plot_found_initial_value(ax, xlim, init_improvement, **add_plot_kwargs)
 
 
 def optimization_log_points(filename):
@@ -216,10 +344,15 @@ def list_minmax_vals_werrs(mean_list, std_list, cur_list_min=None, cur_list_max=
     return list_min, list_max
 
 
-def plot_ax_bias(ax, points_x, points_y, bias, yerr=None):
+def plot_ax_bias(ax, points_x, points_y, bias, yerr=None, **add_plot_kwargs):
     color = bias_linecolor[bias]
     linestyle = bias_linestyle[bias]
-    plot_kwargs = {"color": color, "linestyle": linestyle, "linewidth": linewidth}
+    plot_kwargs = {
+        "color": color,
+        "linestyle": linestyle,
+        "linewidth": linewidth,
+        **add_plot_kwargs,
+    }
     ax.plot(points_x, points_y, **plot_kwargs)
     if yerr is None:
         return
@@ -234,7 +367,13 @@ def plot_ax_bias(ax, points_x, points_y, bias, yerr=None):
 
 
 def plot_opt_log_filenames(
-    input_filenames, bias_vals, ytick_positions, ytick_label_format, output_filename
+    input_filenames,
+    bias_vals,
+    ytick_positions_tuple,
+    ytick_label_format,
+    cur_best_ref_val,
+    cur_val_STD_coeff,
+    output_filename,
 ):
     fig = plt.figure(constrained_layout=True)
     ax = fig.add_subplot()
@@ -251,7 +390,11 @@ def plot_opt_log_filenames(
     max_y = None
 
     for input_filename, bias in zip(input_filenames, bias_vals):
-        points_x, points_y = optimization_log_points(input_filename)
+        points_x, unscaled_points_y = optimization_log_points(input_filename)
+        points_y = [
+            (unscaled_point_y - cur_best_ref_val) / cur_val_STD_coeff
+            for unscaled_point_y in unscaled_points_y
+        ]
         min_x, max_x = list_minmax_vals(
             points_x, cur_list_min=min_x, cur_list_max=max_x
         )
@@ -291,6 +434,9 @@ def plot_opt_log_filenames(
     ax.set_xlim(final_min_x, final_max_x)
     ax.set_ylim(final_min_y, final_max_y)
 
+    # Plot initial value.
+    plot_initial_value(ax, input_filenames[0], cur_best_ref_val, cur_val_STD_coeff)
+
     #    ax.set_yscale("log")
     ax.set_xscale("log")
 
@@ -309,22 +455,32 @@ def plot_opt_log_filenames(
 
     ax.set_xticks(xtick_positions)
     ax.set_xticklabels(xtick_labels, fontsize=ticks_fontsize)
+    ax.yaxis.set_minor_locator(
+        MultipleLocator(ytick_positions_tuple[2] / float(num_minor_ticks))
+    )
 
     format_func = latex_format(**ytick_label_format)
 
     cur_ytick_positions = []
     cur_ytick_labels = []
-    for pos in ytick_positions:
-        if (pos < final_min_y) or (pos > final_max_y):
+    ytick_upper_bound = ytick_positions_tuple[1] + negligible_step_float
+    pos = ytick_positions_tuple[0]
+    tick_step = ytick_positions_tuple[2]
+    while pos < ytick_upper_bound:
+        if pos < final_min_y:
+            pos += tick_step
             continue
+        if pos > final_max_y:
+            break
         cur_ytick_positions.append(pos)
         cur_ytick_labels.append(format_func(pos))
+        pos += tick_step
 
     ax.set_yticks(cur_ytick_positions)
     ax.set_yticklabels(cur_ytick_labels, fontsize=ticks_fontsize)
 
-    fig.set_figwidth(8.0)
-    fig.set_figheight(6.0)
+    fig.set_figwidth(fig_width)
+    fig.set_figheight(fig_height)
 
     ax.set_position(position)
 
@@ -334,6 +490,7 @@ def plot_opt_log_filenames(
 def plot_opt_log_diff_bias(
     data_dir, dataset, quantity_name, gap_constraint, figure_dir
 ):
+
     batch_name = dataset + "_" + quantity_name + "_" + gap_constraint
     all_input_filenames = []
     all_biases = []
@@ -345,13 +502,58 @@ def plot_opt_log_diff_bias(
         all_input_filenames += input_filenames
         all_biases += [bias for _ in input_filenames]
     figure_file = figure_dir + "/opt_logs_" + batch_name + ".png"
+
+    # Specific values.
+    cur_ytick_positions_tuple = ytick_positions_tuples[dataset][gap_constraint][
+        quantity_name
+    ]
+    cur_ytick_label_format = ytick_label_format[dataset][quantity_name]
+    cur_best_ref_val = best_ref_vals[dataset][gap_constraint][quantity_name][0]
+    cur_val_STD_coeff = quant_STD[dataset][gap_constraint][quantity_name]
+    if quantity_name == solv_en:
+        cur_val_STD_coeff *= -1
     plot_opt_log_filenames(
         all_input_filenames,
         all_biases,
-        ytick_positions[dataset][quantity_name],
-        ytick_label_format[dataset][quantity_name],
+        cur_ytick_positions_tuple,
+        cur_ytick_label_format,
+        cur_best_ref_val,
+        cur_val_STD_coeff,
         figure_file,
     )
+
+
+def plot_legend(output_dir):
+    output_filename = output_dir + "/legend.png"
+    fig = plt.figure(constrained_layout=True)
+    fig.set_figwidth(fig_width * 0.75)
+    fig.set_figheight(fig_height * 0.75)
+    legend_plot = fig.add_subplot()
+    for bias in bias_values:
+        bias_label = (
+            r"$" + bias_coeff_symbol + "=" + "{:1.1f}".format(bias_true_val[bias]) + "$"
+        )
+        plot_ax_bias(legend_plot, [], [], bias, yerr=None, label=bias_label)
+    plot_found_initial_value(legend_plot, [], 0.0, label="init. val.")
+    # Re-assign linewidth.
+    leg = legend_plot.legend()
+    for line in leg.get_lines():
+        line.set_linewidth(linewidth * 20.0)
+    handles, labels = legend_plot.get_legend_handles_labels()
+    legend_plot.axis("off")
+    legend_plot.get_xaxis().set_visible(False)
+    legend_plot.get_yaxis().set_visible(False)
+    legend_plot.legend(
+        handles,
+        labels,
+        numpoints=1,
+        ncol=legend_ncol,
+        fontsize=legend_fontsize * 0.6,
+        frameon=False,
+        handlelength=2.0,
+    )
+    fig.savefig(output_filename)
+    run(["convert", output_filename, "-trim", output_dir + "/trimmed_legend.png"])
 
 
 def main():
@@ -362,6 +564,7 @@ def main():
                 plot_opt_log_diff_bias(
                     data_dir, dataset, quantity_name, gap_constraint, output_dir
                 )
+    plot_legend(output_dir)
 
 
 if __name__ == "__main__":
