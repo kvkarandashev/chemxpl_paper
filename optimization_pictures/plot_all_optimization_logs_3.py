@@ -44,7 +44,7 @@ leftover_mult_x = 2.0
 leftover_mult_y = 0.05
 
 fig_width = 8.0
-fig_height = 5.5
+fig_height = 5.0  # 5.5
 
 bias_linestyle = {"none": "dotted", "weak": "dashdot", "stronger": "dashed"}
 
@@ -211,6 +211,8 @@ xtick_position_powers = [0, 2, 4]
 xtick_positions = [10.0**p for p in xtick_position_powers]
 xtick_labels = [r"$10^{" + str(p) + "}$" for p in xtick_position_powers]
 
+plot_all_xtick_labels = True  # False
+
 display_xtick_labels = {
     QM9: {
         "weak": {solv_en: True, dipole: False},
@@ -228,7 +230,7 @@ left_indent = 0.25
 bottom_indent = 0.1
 
 right_indent = 0.05
-top_indent = 0.01
+top_indent = 0.05
 
 position = [
     left_indent,
@@ -527,6 +529,12 @@ def plot_opt_log_diff_bias(
     cur_val_STD_coeff = quant_STD[dataset][gap_constraint][quantity_name]
     if quantity_name == solv_en:
         cur_val_STD_coeff *= -1
+    if plot_all_xtick_labels:
+        cur_display_xtick_labels = True
+    else:
+        cur_display_xtick_labels = display_xtick_labels[dataset][gap_constraint][
+            quantity_name
+        ]
     plot_opt_log_filenames(
         all_input_filenames,
         all_biases,
@@ -535,9 +543,7 @@ def plot_opt_log_diff_bias(
         cur_best_ref_val,
         cur_val_STD_coeff,
         figure_file,
-        cur_display_xtick_labels=display_xtick_labels[dataset][gap_constraint][
-            quantity_name
-        ],
+        cur_display_xtick_labels=cur_display_xtick_labels,
     )
 
 
