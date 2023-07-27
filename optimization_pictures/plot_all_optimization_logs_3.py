@@ -25,14 +25,14 @@ output_dir = "./opt_log_figures"
 
 plot_averages_werrors = True
 
-linewidth = 2.0
+linewidth = 2.5
 err_linewidth = 1.5
 err_capsize = 6.0
 markersize = 16
 
 minor_tick_length_coeff = 2.0
 major_tick_length_coeff = 3.5
-markeredge_coeff = 0.75
+markeredge_coeff = 1.0  # 0.75
 
 title_fontsize = 40.0
 
@@ -159,6 +159,8 @@ def latex_scientific(number_in, nfigures=0):
     def_sci = ("{:0." + str(nfigures) + "e}").format(number_in)
     parts = def_sci.split("e")
     output = parts[0]
+    if output[0] == "-":
+        output = output[1:]
     if len(parts) > 1:
         extra = parts[1]
         if extra != "+00":
@@ -181,6 +183,8 @@ class latex_format:
             return "0"
         output = latex_scientific(number_in, nfigures=self.nfigures)
         output = r"$" + output + "$"
+        if number_in < 0:
+            output = "-" + output
         return output
 
 
@@ -197,7 +201,7 @@ ytick_positions_tuples = {
 
 ytick_label_format = {
     QM9: {
-        solv_en: {"scientific": True, "nfigures": 1},
+        solv_en: {"scientific": False, "nfigures": 1},
         dipole: {"scientific": False, "nfigures": 1},
     },
     EGP: {
@@ -227,7 +231,7 @@ display_xtick_labels = {
 num_minor_ticks = 2
 
 left_indent = 0.25
-bottom_indent = 0.1
+bottom_indent = 0.11
 
 right_indent = 0.05
 top_indent = 0.05
@@ -283,14 +287,18 @@ def plot_found_initial_value(ax, xlim, init_improvement, **add_plot_kwargs):
     )
 
 
-def plot_initial_value(
-    ax, input_filename, best_val_ref, STD_val_coeff, **add_plot_kwargs
-):
+def get_init_improvement(input_filename, best_val_ref, STD_val_coeff):
     input = open(input_filename, "r")
     first_line = input.readline()
     input.close()
     _, init_val, _ = line2step_quant_SMILES(first_line)
-    init_improvement = (init_val - best_val_ref) / STD_val_coeff
+    return (init_val - best_val_ref) / STD_val_coeff
+
+
+def plot_initial_value(
+    ax, input_filename, best_val_ref, STD_val_coeff, **add_plot_kwargs
+):
+    init_improvement = get_init_improvement(input_filename, best_val_ref, STD_val_coeff)
     xlim = ax.get_xlim()
     plot_found_initial_value(ax, xlim, init_improvement, **add_plot_kwargs)
 
@@ -437,6 +445,11 @@ def plot_opt_log_filenames(
 
     final_min_x = min_x / leftover_mult_x
     final_max_x = max_x * leftover_mult_x
+
+    init_improvement = get_init_improvement(
+        input_filenames[0], cur_best_ref_val, cur_val_STD_coeff
+    )
+    min_y = min(min_y, init_improvement)
 
     y_spread = max_y - min_y
     extra_y_spread = y_spread * leftover_mult_y

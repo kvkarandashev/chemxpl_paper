@@ -1,6 +1,6 @@
 #!/bin/bash
 
-picture_width=26.0
+picture_width=27.0
 
 rightmost_x_coord=$(echo $picture_width 3 | awk '{print $1*$2}')
 
@@ -56,7 +56,7 @@ EOF
 EOF
         if [ "$image_id" == "3" ]
         then
-            echo "\node[above left = -2.0ex and -2.0ex of image$image_id, rotate=90] (yaxis$imageid) {rel. improv.};" >> $tex_name
+            echo "\node[above left = -2.0ex and -1.5ex of image$image_id, rotate=90] (yaxis$imageid) {rel. improv.};" >> $tex_name
         fi
         image_x=$(echo $image_x $picture_width | awk '{print $1-$2}')
     done
