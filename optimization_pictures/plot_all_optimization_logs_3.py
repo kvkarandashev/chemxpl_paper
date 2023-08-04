@@ -3,6 +3,7 @@ from glob import glob
 from subprocess import run
 import numpy as np
 from matplotlib.ticker import MultipleLocator
+import sys
 
 bias_values = ["none", "weak", "stronger"]
 
@@ -518,7 +519,7 @@ def plot_opt_log_filenames(
 
 
 def plot_opt_log_diff_bias(
-    data_dir, dataset, quantity_name, gap_constraint, figure_dir
+    data_dir, dataset, quantity_name, gap_constraint, figure_dir, for_deliverable=False
 ):
 
     batch_name = dataset + "_" + quantity_name + "_" + gap_constraint
@@ -548,6 +549,8 @@ def plot_opt_log_diff_bias(
         cur_display_xtick_labels = display_xtick_labels[dataset][gap_constraint][
             quantity_name
         ]
+    if for_deliverable:
+        cur_display_xtick_labels = quantity_name == "dipole"
     plot_opt_log_filenames(
         all_input_filenames,
         all_biases,
@@ -601,12 +604,21 @@ def plot_legend(output_dir, ncol):
 
 
 def main():
+    if len(sys.argv) > 1:
+        for_deliverable = sys.argv[1] == "deliverable"
+    else:
+        for_deliverable = False
     run(["mkdir", "-p", output_dir])
     for dataset in datasets:
         for quantity_name in quantity_names:
             for gap_constraint in gap_constraints:
                 plot_opt_log_diff_bias(
-                    data_dir, dataset, quantity_name, gap_constraint, output_dir
+                    data_dir,
+                    dataset,
+                    quantity_name,
+                    gap_constraint,
+                    output_dir,
+                    for_deliverable=for_deliverable,
                 )
     for ncol in [1, 2]:
         plot_legend(output_dir, ncol)
