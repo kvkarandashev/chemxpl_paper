@@ -1,4 +1,4 @@
-import os, glob, subprocess
+import glob
 
 
 def all_xyz_vals(xyz_file):
