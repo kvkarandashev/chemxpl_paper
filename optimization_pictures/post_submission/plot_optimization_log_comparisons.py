@@ -18,7 +18,7 @@ init_cond_filename_root = {
 }
 init_cond_label = {
     methane_init: r"$\mathrm{CH}_{4}$ init. mol.",
-    random_init: "random init. mol.",
+    random_init: "rand. init. mol.",
 }
 
 output_dir = "./opt_log_figures"
