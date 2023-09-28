@@ -32,6 +32,7 @@ parent_folder = sys.argv[1]
 dataset_name = sys.argv[2]
 
 tot_improvement_length = 4
+tot_value_length = 4
 
 if dataset_name == "QM9":
     improvement_numbers_to_the_left = 1
@@ -39,12 +40,24 @@ if dataset_name == "QM9":
 
     improvement_RMSE_numbers_to_the_left = 1
     improvement_RMSE_numbers_to_the_right = 3
+
+    value_numbers_to_the_left = 2
+    value_numbers_to_the_right = 2
+
+    value_RMSE_numbers_to_the_left = 1
+    value_RMSE_numbers_to_the_right = 3
 else:
     improvement_numbers_to_the_left = 3
     improvement_numbers_to_the_right = 2
 
     improvement_RMSE_numbers_to_the_left = 1
     improvement_RMSE_numbers_to_the_right = 2
+
+    value_numbers_to_the_left = 3
+    value_numbers_to_the_right = 2
+
+    value_RMSE_numbers_to_the_left = 1
+    value_RMSE_numbers_to_the_right = 3
 
 # For LaTeX conversion.
 def preexp_power(n):
@@ -77,8 +90,7 @@ def latex_single_number_form(val, phantom_minus_alignment=False):
         output += "\cdot 10^{" + str(power) + "}"
     if phantom_minus_alignment:
         if val > 0.0:
-            output = "\phantom{-}" + output
-        output = "\phantom{(}" + output
+            output = "\phantom{\\pm}" + output
     return output
 
 
@@ -96,12 +108,20 @@ def phantom_zero_padded_value_str(
 ):
     val_str_split = val_str.split(".")
     cur_to_the_left = len(val_str_split[0])
-    cur_to_the_right = len(val_str_split[1])
-    return (
+    if val_str[0] == "-":
+        cur_to_the_left -= 1
+    if len(val_str_split) > 1:
+        cur_to_the_right = len(val_str_split[1])
+    else:
+        cur_to_the_right = 0
+    val_str = (
         phantom_zero_pad(numbers_to_the_left - cur_to_the_left)
         + val_str
         + phantom_zero_pad(numbers_to_the_right - cur_to_the_right)
     )
+    if cur_to_the_right == 0:
+        val_str += "\phantom{.}"
+    return val_str
 
 
 def special_latex_form(
@@ -112,6 +132,7 @@ def special_latex_form(
     tot_length=4,
     RMSE_numbers_to_the_left=1,
     RMSE_numbers_to_the_right=3,
+    phantom_minus_alignment=False,
 ):
     _, power = preexp_power(val)
     form_str = "{:." + str(tot_length - 1 - max(0, power)) + "f}"
@@ -129,7 +150,8 @@ def special_latex_form(
         numbers_to_the_left=RMSE_numbers_to_the_left,
         numbers_to_the_right=RMSE_numbers_to_the_right,
     )
-
+    if (val > 0) and phantom_minus_alignment:
+        val_str = "\phantom{\pm}" + val_str
     return "$" + val_str + " \pm " + RMSE_str + "$"
 
 
@@ -149,6 +171,18 @@ def latex_form(mean, RMSE, phantom_minus_alignment=False, quant=None):
     else:
         used_mean = mean
         used_RMSE = RMSE
+
+    if dataset_name == "QM9":
+        return special_latex_form(
+            used_mean,
+            used_RMSE,
+            tot_length=tot_value_length,
+            numbers_to_the_left=value_numbers_to_the_left,
+            numbers_to_the_right=value_numbers_to_the_right,
+            RMSE_numbers_to_the_left=value_RMSE_numbers_to_the_left,
+            RMSE_numbers_to_the_right=value_RMSE_numbers_to_the_right,
+            phantom_minus_alignment=phantom_minus_alignment,
+        )
 
     est_mean_pe, est_mean_power = preexp_power(used_mean)
     est_err_num = adjusted_error(used_RMSE, est_mean_power)
