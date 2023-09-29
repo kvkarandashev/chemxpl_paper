@@ -1,6 +1,6 @@
 #!/bin/bash
 
-script_version="post_sub_13"
+script_version="post_sub_13_alt"
 
 function run_for () {
     dataset=$1
