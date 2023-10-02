@@ -1,6 +1,6 @@
 #!/bin/bash
 
-script_version=11 #10
+script_version=11_post_sub_full #10
 
 function run_for () {
     dataset=$1
