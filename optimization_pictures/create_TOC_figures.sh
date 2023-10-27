@@ -3,7 +3,10 @@
 function create_for () {
     dataset=$1
     figure_dir="opt_log_figures_TOC"
-    inserted_png="$figure_dir/opt_logs_"$dataset"_solvation_energy_weak.png"
+    inserted_image_prefix="$figure_dir/opt_logs_"$dataset"_solvation_energy_weak"
+    inserted_image=$inserted_image_prefix.pdf
+#    pdfcrop $inserted_image_prefix.pdf
+#    inserted_image=$inserted_image_prefix-crop.pdf
 
     tex_name=TOC_opt_log_solv_en_weak_constr_$dataset.tex
     cat > $tex_name << EOF
@@ -31,7 +34,7 @@ function create_for () {
 \begin{figure}[tbp]
 \centering
 \begin{tikzpicture}
-\node[anchor=base, inner sep=0] (image) at (0.0ex,0.0ex) {\includegraphics[width=0.3\linewidth]{$inserted_png}};
+\node[anchor=base, inner sep=0] (image) at (0.0ex,0.0ex) {\includegraphics[width=0.3\linewidth]{$inserted_image}};
 \node[below right = 0.0ex and -22.0ex of image] (xaxis) {num. MC steps};
 \node[above left = -0.1ex and -2.0ex of image, rotate=90] (yaxis) {improv. over $dataset}; 
 \node[above left = -0.25ex and -31.5ex of image] (title) {$\dEsolv$ optimization};
@@ -61,6 +64,8 @@ EOF
 #    inkscape $prefix-crop.pdf --export-filename=$eps_version
     gs -q -dNOCACHE -dNOPAUSE -dBATCH -dSAFER -sDEVICE=eps2write -sOutputFile=$eps_version $cropped_pdf
 #    convert $cropped_pdf $eps_version
+    svg_version=$prefix.svg
+    pdf2svg $cropped_pdf $svg_version
 }
 
 for dataset in QM9 EGP

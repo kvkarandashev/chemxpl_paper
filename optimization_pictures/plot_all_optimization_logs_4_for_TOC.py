@@ -515,7 +515,7 @@ def plot_opt_log_filenames(
 
     ax.set_position(position)
 
-    fig.savefig(output_filename)
+    fig.savefig(output_filename, transparent=True)
 
 
 def plot_opt_log_diff_bias(
@@ -532,7 +532,7 @@ def plot_opt_log_diff_bias(
         input_filenames = glob(input_filename_family_name + "_*.txt")
         all_input_filenames += input_filenames
         all_biases += [bias for _ in input_filenames]
-    figure_file = figure_dir + "/opt_logs_" + batch_name + ".png"
+    figure_file = figure_dir + "/opt_logs_" + batch_name + ".pdf"
 
     # Specific values.
     cur_ytick_positions_tuple = ytick_positions_tuples[dataset][gap_constraint][
@@ -591,7 +591,7 @@ def plot_legend(output_dir, ncol):
         frameon=False,
         handlelength=2.0,
     )
-    fig.savefig(output_filename)
+    fig.savefig(output_filename, transparent=True)
     run(
         [
             "convert",
