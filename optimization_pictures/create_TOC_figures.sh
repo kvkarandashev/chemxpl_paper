@@ -35,9 +35,9 @@ function create_for () {
 \centering
 \begin{tikzpicture}
 \node[anchor=base, inner sep=0] (image) at (0.0ex,0.0ex) {\includegraphics[width=0.3\linewidth]{$inserted_image}};
-\node[below right = 0.0ex and -22.0ex of image] (xaxis) {num. MC steps};
+\node[below right = -0.5ex and -22.0ex of image] (xaxis) {num. MC steps};
 \node[above left = -0.1ex and -2.0ex of image, rotate=90] (yaxis) {improv. over $dataset}; 
-\node[above left = -0.25ex and -31.5ex of image] (title) {$\dEsolv$ optimization};
+\node[above left = -0.75ex and -31.5ex of image] (title) {$\dEsolv$ optimization};
 %\node[below right = -14.5ex and -0.75ex of image] (legend) {\includegraphics[width=0.1\linewidth]{$figure_dir/trimmed_legend_1.png}};
 \end{tikzpicture}
 \end{figure}

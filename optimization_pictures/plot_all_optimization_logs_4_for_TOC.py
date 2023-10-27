@@ -397,7 +397,7 @@ def plot_opt_log_filenames(
     output_filename,
     cur_display_xtick_labels=True,
 ):
-    fig = plt.figure(constrained_layout=True)
+    fig = plt.figure(constrained_layout=True, facecolor="None")
     ax = fig.add_subplot()
     plt.setp(ax.spines.values(), linewidth=linewidth)
 
@@ -510,12 +510,14 @@ def plot_opt_log_filenames(
     ax.set_yticks(cur_ytick_positions)
     ax.set_yticklabels(cur_ytick_labels, fontsize=ticks_fontsize)
 
+    ax.set_facecolor("white")
+
     fig.set_figwidth(fig_width)
     fig.set_figheight(fig_height)
 
     ax.set_position(position)
 
-    fig.savefig(output_filename, transparent=True)
+    fig.savefig(output_filename)
 
 
 def plot_opt_log_diff_bias(
